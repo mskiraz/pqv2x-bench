@@ -17,20 +17,26 @@ C-V2X per-message budget T_sf/m = 0.500 ms, i.e. 1.121 x primitive.
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
 | cv2x | steady, median work | 100 | 0.461 | 0.576 | 0.980 | 0.980 | 0.00e+00 | 0.0000 | 0.000 |
 | cv2x | steady, median work | 150 | 0.691 | 0.634 | 0.980 | 0.980 | 0.00e+00 | 0.0000 | 0.000 |
+| cv2x | steady, median work | 162 | 0.747 | 0.647 | 0.980 | 0.980 | 0.00e+00 | 0.0000 | 0.000 |
 | cv2x | steady, median work | 200 | 0.922 | 0.691 | 0.980 | 0.980 | 0.00e+00 | 0.0000 | 0.000 |
 | cv2x | steady, measured jitter | 100 | 0.463 | 0.587 | 2.788 | 9.742 | 0.00e+00 | 0.0000 | 0.000 |
 | cv2x | steady, measured jitter | 150 | 0.694 | 0.661 | 3.474 | 9.023 | 0.00e+00 | 0.0000 | 0.000 |
+| cv2x | steady, measured jitter | 162 | 0.749 | 0.683 | 3.688 | 9.001 | 0.00e+00 | 0.0000 | 0.000 |
 | cv2x | steady, measured jitter | 200 | 0.925 | 0.809 | 4.590 | 12.310 | 6.45e-07 | 0.0001 | 0.000 |
 | cv2x | no caching, median work | 100 | 0.562 | 0.777 | 2.694 | 5.324 | 0.00e+00 | 0.0000 | 0.000 |
 | cv2x | no caching, median work | 150 | 0.843 | 1.146 | 4.590 | 9.154 | 0.00e+00 | 0.0000 | 0.000 |
+| cv2x | no caching, median work | 162 | 0.911 | 1.463 | 6.133 | 12.075 | 2.91e-06 | 0.0003 | 0.000 |
 | cv2x | no caching, median work | 200 | 1.124 | unstable | | | | | |
 | cv2x | no caching, measured jitter | 100 | 0.564 | 0.798 | 4.109 | 10.956 | 4.00e-08 | 0.0000 | 0.000 |
 | cv2x | no caching, measured jitter | 150 | 0.847 | 1.226 | 6.267 | 14.925 | 1.45e-05 | 0.0024 | 0.000 |
+| cv2x | no caching, measured jitter | 162 | 0.914 | 1.615 | 8.074 | 17.150 | 1.45e-04 | 0.0168 | 0.000 |
 | cv2x | no caching, measured jitter | 200 | 1.129 | unstable | | | | | |
 | cv2x | cold start, median work | 100 | 0.461 | 0.658 | 2.350 | 5.220 | 0.00e+00 | 0.0000 | 0.200 |
 | cv2x | cold start, median work | 150 | 0.691 | 0.775 | 3.510 | 8.616 | 0.00e+00 | 0.0000 | 0.200 |
+| cv2x | cold start, median work | 162 | 0.747 | 0.834 | 4.548 | 11.243 | 3.86e-07 | 0.0001 | 0.200 |
 | cv2x | cold start, median work | 200 | 0.922 | 3.456 | 20.055 | 28.620 | 1.19e-01 | 0.9719 | 0.200 |
 | cv2x | cold start, measured jitter | 100 | 0.463 | 0.671 | 3.424 | 10.733 | 1.25e-08 | 0.0000 | 0.200 |
 | cv2x | cold start, measured jitter | 150 | 0.694 | 0.809 | 4.705 | 14.525 | 2.31e-06 | 0.0003 | 0.200 |
+| cv2x | cold start, measured jitter | 162 | 0.749 | 0.883 | 5.793 | 16.476 | 1.32e-05 | 0.0015 | 0.200 |
 | cv2x | cold start, measured jitter | 200 | 0.925 | 3.870 | 22.510 | 33.595 | 1.41e-01 | 0.9723 | 0.200 |
 

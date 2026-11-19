@@ -271,7 +271,18 @@ func main() {
 	slots := flag.Int("m", 2, "messages per C-V2X subframe")
 	seed := flag.Uint64("seed", 7, "random seed")
 	out := flag.String("out", "", "write the Markdown report to this file as well")
+	sendersFlag := flag.String("senders", "100,150,200", "comma-separated sender counts N")
 	flag.Parse()
+
+	var counts []int
+	for _, f := range strings.Split(*sendersFlag, ",") {
+		n, err := strconv.Atoi(strings.TrimSpace(f))
+		if err != nil || n <= 0 {
+			fmt.Fprintln(os.Stderr, "invalid -senders value:", f)
+			os.Exit(1)
+		}
+		counts = append(counts, n)
+	}
 
 	s := *armPrim * 1e-3
 	d := *deadline * 1e-3
@@ -289,7 +300,7 @@ func main() {
 			fixedScenario("1.5S", s, 1.5, 1.5),
 			fixedScenario("2S", s, 2, 2),
 		} {
-			for _, n := range []int{100, 150, 200} {
+			for _, n := range counts {
 				rs = append(rs, simulate("cv2x", n, *slots, sc, d, *configs, 10, 10, *seed))
 			}
 		}
@@ -346,7 +357,7 @@ func main() {
 			{name: "cold start, measured jitter", svc: emp, meanWork: steadyEmp, coldStart: true},
 		}
 		for _, sc := range scens {
-			for _, n := range []int{100, 150, 200} {
+			for _, n := range counts {
 				// Cold start: empty cache and empty queue at t = 0, 20 periods measured.
 				rs = append(rs, simulate("cv2x", n, *slots, sc, d, *configs, 10, 10, *seed))
 			}

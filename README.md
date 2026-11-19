@@ -145,9 +145,15 @@ times per case, in four situations:
 | Certificate, cached | 69.3 µs | 1.098× |
 | Certificate, new | 140.9 µs | 2.233× |
 
-So once a certificate is known, the complete check costs only 2% to 10% more
-than the bare signature verification. A new certificate more than doubles the
-cost.
+So once a certificate is known, the complete check typically costs only 2% to
+10% more than the bare signature verification. A new certificate more than
+doubles the cost.
+
+These are medians. Individual checks vary: on the benchmark laptop, 2% to 4%
+of the digest checks and 8% to 13% of the cached-certificate checks took more
+than 1.121 times the primitive, which is the per-message budget of the C-V2X
+radio (see the simulation below). The benchmark therefore supports
+"typically within budget", not a guaranteed worst case.
 
 **Why the ratios matter more than the times.** The laptop used here is much
 faster than a vehicle's on-board computer, so the microsecond values do not
@@ -182,9 +188,14 @@ It does this for three situations:
 
 | Situation | Meaning | Result for Falcon-512 |
 |---|---|---|
-| **Steady** | the receiver already knows every vehicle's certificate | delay never exceeds 0.98 ms, even with 200 vehicles |
-| **No caching** | the receiver re-checks every certificate it is sent | works up to 150 vehicles; with 200 the queue grows without limit |
-| **Cold start** | all vehicles are new at once, for example when a car enters a dense area | fine up to 150 vehicles; with 200, 11.9% of messages miss the 10 ms deadline in the first second |
+| **Steady** | the receiver already knows every vehicle's certificate | with typical (median) check times the delay stays below 1 ms; with the measured timing variation the worst delay is about 9 ms at 162 vehicles |
+| **No caching** | the receiver re-checks every certificate it is sent | works up to 162 vehicles (worst delay 12 ms); with 200 the queue grows without limit |
+| **Cold start** | all vehicles are new at once, for example when a car enters a dense area | almost fully absorbed up to 162 vehicles; with 200, 11.9% of messages miss the 10 ms deadline in the first second |
+
+Why 162 and 200: with Falcon-512 each message occupies 4 of the 10 radio
+subchannels. The radio congestion budget used in the paper (65% occupancy)
+then admits at most 162 vehicles. 200 vehicles is a *stress case* beyond that
+budget.
 
 ### What you get when you run it
 
@@ -209,7 +220,7 @@ Requires Go 1.25 or later. No C compiler and no other tools are needed.
 git clone https://github.com/mskiraz/pqv2x-bench.git
 cd pqv2x-bench
 
-# 1. Correctness tests (about 15 s; add -short to skip SLH-DSA)
+# 1. Correctness tests (about 45 s; add -short to skip SLH-DSA)
 go test ./internal/...
 
 # 2. Benchmark (about 2 minutes); writes results/bench_<tag>.{json,md}
@@ -301,6 +312,13 @@ path taken (`PathDigestHit`, `PathCertKnown`, `PathCertNew`).
 
 Not included: revocation lists, misbehaviour detection, replay detection, and
 chains longer than one issuer.
+
+The tests in `internal/receiver` run every scheme through the accepting
+paths and through each rejection: truncated, over-long and empty input; a
+certificate from an unknown issuer; a digest for an unknown certificate; a
+PSID that the certificate does not permit; a tampered payload, signature or
+carried certificate; a valid message relabelled with another sender's
+digest; a stale message; and an expired certificate, cached or carried.
 
 ## Encoding profile
 
@@ -501,6 +519,7 @@ jitter into the simulation and is a sensitivity check, not a prediction.
 | `-configs` | 10000 | random configurations per case |
 | `-m` | 2 | messages per C-V2X subframe |
 | `-seed` | 7 | random seed |
+| `-senders` | `100,150,200` | comma-separated sender counts `N` |
 | `-out` | none | also write the Markdown report to this file |
 
 ### Output columns
@@ -547,13 +566,21 @@ Decoding alone takes 0.12 to 0.13 microseconds.
 
 | Scenario | N | rho | Mean T (ms) | Max T (ms) | Pr[T > 10 ms] |
 |---|---:|---:|---:|---:|---:|
-| Steady | 100 / 150 / 200 | 0.46 / 0.69 / 0.92 | 0.58 / 0.63 / 0.69 | 0.98 | 0 |
+| Steady | 100 / 150 / 162 / 200 | 0.46 / 0.69 / 0.75 / 0.92 | 0.58 / 0.63 / 0.65 / 0.69 | 0.98 | 0 |
 | No caching | 100 | 0.56 | 0.78 | 5.32 | 0 |
 | No caching | 150 | 0.84 | 1.15 | 9.15 | 0 |
-| No caching | 200 | 1.12 | unstable | | |
+| No caching | 162 | 0.91 | 1.46 | 12.08 | 2.9e-6 |
+| No caching | 200 (stress) | 1.12 | unstable | | |
 | Cold start | 100 | | 0.66 | 5.22 | 0 |
 | Cold start | 150 | | 0.78 | 8.62 | 0 |
-| Cold start | 200 | | 3.46 | 28.62 | 0.119 |
+| Cold start | 162 | | 0.83 | 11.24 | 3.9e-7 |
+| Cold start | 200 (stress) | | 3.46 | 28.62 | 0.119 |
+
+`N = 162` is the largest all-Falcon-512 load within a 65% subchannel
+occupancy budget; `N = 200` is beyond it. The table uses median service
+times. With service times drawn from the measured samples ("measured
+jitter" rows in the result files), the steady-state maximum delay is 9.0 ms
+at `N = 162` and 12.3 ms at `N = 200`.
 
 Files:
 
@@ -569,7 +596,7 @@ Files:
 | Fixed-work receiver delay (M/M/1 rows are analytic) | `go run ./cmd/queuesim -mode fixed -configs 100000` |
 | Encoded IEEE 1609.2 sizes | `go run ./cmd/bench` (sizes table) |
 | Receiver authentication time | `go run ./cmd/bench` (timing table) |
-| C-V2X queue with measured ratios | `go run ./cmd/queuesim -mode measured -configs 100000 -tag <tag>` |
+| C-V2X queue with measured ratios | `go run ./cmd/queuesim -mode measured -configs 100000 -senders 100,150,162,200 -tag <tag>` |
 
 Sizes are deterministic. Timings depend on the machine; the ratios to the
 primitive are what the paper uses. Simulation results with the default seed
@@ -578,7 +605,7 @@ files, for the `measured` mode. To rerun the simulation on the published
 samples:
 
 ```sh
-go run ./cmd/queuesim -mode measured -configs 100000 -tag intel-i9-10980hk-run1
+go run ./cmd/queuesim -mode measured -configs 100000 -tag intel-i9-10980hk-run1 -senders 100,150,162,200
 ```
 
 ## Running on ARM
