@@ -1,0 +1,372 @@
+{
+  "tag": "intel-i9-10980hk-run2",
+  "time_utc": "2026-11-19T15:27:04Z",
+  "go_version": "go1.25.6",
+  "goos": "windows",
+  "goarch": "amd64",
+  "cpu": "Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",
+  "num_cpu": 16,
+  "iterations": 20000,
+  "schemes": [
+    {
+      "name": "ECDSA P-256",
+      "sizes": {
+        "public_key": 33,
+        "signature": 64,
+        "certificate": 144,
+        "digest_spdu": 132,
+        "certificate_spdu": 270
+      },
+      "ops": {
+        "cert_known": {
+          "n": 20000,
+          "mean_us": 95.97081,
+          "std_us": 15.969736314163248,
+          "min_us": 92.3,
+          "p50_us": 93.2,
+          "p90_us": 97,
+          "p99_us": 159.3,
+          "p999_us": 257.2,
+          "max_us": 854.5,
+          "ratio_to_primitive_mean": 1.0292067249946808,
+          "ratio_to_primitive_median": 1.0241758241758243
+        },
+        "cert_new": {
+          "n": 20000,
+          "mean_us": 200.39755,
+          "std_us": 25.230848638076,
+          "min_us": 194.7,
+          "p50_us": 196.6,
+          "p90_us": 202.2,
+          "p99_us": 285.5,
+          "p999_us": 592.4,
+          "max_us": 1070.4,
+          "ratio_to_primitive_mean": 2.1490962317860793,
+          "ratio_to_primitive_median": 2.1604395604395603
+        },
+        "decode": {
+          "n": 20000,
+          "mean_us": 0.13347525,
+          "std_us": 0.1543374503723496,
+          "min_us": 0.107,
+          "p50_us": 0.117,
+          "p90_us": 0.123,
+          "p99_us": 0.359,
+          "p999_us": 2.607,
+          "max_us": 5.21,
+          "ratio_to_primitive_mean": 0.00143141049784144,
+          "ratio_to_primitive_median": 0.0012857142857142859
+        },
+        "digest_hit": {
+          "n": 20000,
+          "mean_us": 94.136265,
+          "std_us": 12.062098132156521,
+          "min_us": 91.4,
+          "p50_us": 92.1,
+          "p90_us": 95.9,
+          "p99_us": 151.4,
+          "p999_us": 227.7,
+          "max_us": 780.7,
+          "ratio_to_primitive_mean": 1.0095327631795687,
+          "ratio_to_primitive_median": 1.012087912087912
+        },
+        "digest_unknown": {
+          "n": 20000,
+          "mean_us": 0.1452928,
+          "std_us": 0.1683433416211048,
+          "min_us": 0.118,
+          "p50_us": 0.128,
+          "p90_us": 0.132,
+          "p99_us": 0.56,
+          "p999_us": 2.823,
+          "max_us": 5.112,
+          "ratio_to_primitive_mean": 0.0015581438445013349,
+          "ratio_to_primitive_median": 0.0014065934065934065
+        },
+        "primitive": {
+          "n": 20000,
+          "mean_us": 93.24736,
+          "std_us": 13.90543059492948,
+          "min_us": 90.2,
+          "p50_us": 91,
+          "p90_us": 94.6,
+          "p99_us": 155,
+          "p999_us": 230.7,
+          "max_us": 928.1,
+          "ratio_to_primitive_mean": 1,
+          "ratio_to_primitive_median": 1
+        }
+      }
+    },
+    {
+      "name": "Falcon-512",
+      "sizes": {
+        "public_key": 897,
+        "signature": 666,
+        "certificate": 1615,
+        "digest_spdu": 736,
+        "certificate_spdu": 2345
+      },
+      "ops": {
+        "cert_known": {
+          "n": 20000,
+          "mean_us": 70.84973,
+          "std_us": 14.934056010578612,
+          "min_us": 67.4,
+          "p50_us": 69.3,
+          "p90_us": 71.6,
+          "p99_us": 97.5,
+          "p999_us": 298.3,
+          "max_us": 771.9,
+          "ratio_to_primitive_mean": 1.096637589536505,
+          "ratio_to_primitive_median": 1.096518987341772
+        },
+        "cert_new": {
+          "n": 20000,
+          "mean_us": 144.90373499999998,
+          "std_us": 25.568589549479743,
+          "min_us": 137,
+          "p50_us": 141.1,
+          "p90_us": 145.9,
+          "p99_us": 236.8,
+          "p999_us": 517,
+          "max_us": 845,
+          "ratio_to_primitive_mean": 2.2428720993747824,
+          "ratio_to_primitive_median": 2.2325949367088604
+        },
+        "decode": {
+          "n": 20000,
+          "mean_us": 0.14005109999999998,
+          "std_us": 0.17701282097291673,
+          "min_us": 0.112,
+          "p50_us": 0.121,
+          "p90_us": 0.128,
+          "p99_us": 0.645,
+          "p999_us": 2.878,
+          "max_us": 4.806,
+          "ratio_to_primitive_mean": 0.0021677612704513625,
+          "ratio_to_primitive_median": 0.0019145569620253164
+        },
+        "digest_hit": {
+          "n": 20000,
+          "mean_us": 65.69575999999999,
+          "std_us": 14.753651345426325,
+          "min_us": 62.3,
+          "p50_us": 64.3,
+          "p90_us": 66.1,
+          "p99_us": 90.6,
+          "p999_us": 303.6,
+          "max_us": 741.7,
+          "ratio_to_primitive_mean": 1.016862589161155,
+          "ratio_to_primitive_median": 1.0174050632911391
+        },
+        "digest_unknown": {
+          "n": 20000,
+          "mean_us": 0.14894865,
+          "std_us": 0.15639357855480365,
+          "min_us": 0.121,
+          "p50_us": 0.132,
+          "p90_us": 0.139,
+          "p99_us": 0.309,
+          "p999_us": 2.518,
+          "max_us": 5.3,
+          "ratio_to_primitive_mean": 0.0023054807477843114,
+          "ratio_to_primitive_median": 0.002088607594936709
+        },
+        "primitive": {
+          "n": 20000,
+          "mean_us": 64.60633,
+          "std_us": 14.348387677056284,
+          "min_us": 61.4,
+          "p50_us": 63.2,
+          "p90_us": 65.4,
+          "p99_us": 85.3,
+          "p999_us": 275.5,
+          "max_us": 792.7,
+          "ratio_to_primitive_mean": 1,
+          "ratio_to_primitive_median": 1
+        }
+      }
+    },
+    {
+      "name": "ML-DSA-44",
+      "sizes": {
+        "public_key": 1312,
+        "signature": 2420,
+        "certificate": 3784,
+        "digest_spdu": 2490,
+        "certificate_spdu": 6268
+      },
+      "ops": {
+        "cert_known": {
+          "n": 20000,
+          "mean_us": 140.547795,
+          "std_us": 26.498864883952436,
+          "min_us": 133.9,
+          "p50_us": 136.4,
+          "p90_us": 141.6,
+          "p99_us": 244.5,
+          "p999_us": 512.3,
+          "max_us": 847.4,
+          "ratio_to_primitive_mean": 1.095337428839943,
+          "ratio_to_primitive_median": 1.0991136180499599
+        },
+        "cert_new": {
+          "n": 20000,
+          "mean_us": 285.54149,
+          "std_us": 42.950741280912766,
+          "min_us": 273.6,
+          "p50_us": 277.3,
+          "p90_us": 286.2,
+          "p99_us": 496.4,
+          "p999_us": 781,
+          "max_us": 1357.4,
+          "ratio_to_primitive_mean": 2.225323289374453,
+          "ratio_to_primitive_median": 2.234488315874295
+        },
+        "decode": {
+          "n": 20000,
+          "mean_us": 0.13297730000000002,
+          "std_us": 0.12340368991529405,
+          "min_us": 0.114,
+          "p50_us": 0.121,
+          "p90_us": 0.126,
+          "p99_us": 0.248,
+          "p999_us": 1.945,
+          "max_us": 4.287,
+          "ratio_to_primitive_mean": 0.001036337950916112,
+          "ratio_to_primitive_median": 0.0009750201450443192
+        },
+        "digest_hit": {
+          "n": 20000,
+          "mean_us": 128.65821499999998,
+          "std_us": 25.469205553251424,
+          "min_us": 122.5,
+          "p50_us": 124.4,
+          "p90_us": 129.6,
+          "p99_us": 238.4,
+          "p999_us": 492,
+          "max_us": 825,
+          "ratio_to_primitive_mean": 1.0026778322437329,
+          "ratio_to_primitive_median": 1.0024174053182917
+        },
+        "digest_unknown": {
+          "n": 20000,
+          "mean_us": 0.142809,
+          "std_us": 0.11830311077482274,
+          "min_us": 0.123,
+          "p50_us": 0.132,
+          "p90_us": 0.137,
+          "p99_us": 0.253,
+          "p999_us": 2.109,
+          "max_us": 4.246,
+          "ratio_to_primitive_mean": 0.0011129597790929654,
+          "ratio_to_primitive_median": 0.0010636583400483483
+        },
+        "primitive": {
+          "n": 20000,
+          "mean_us": 128.31461,
+          "std_us": 26.584856714827172,
+          "min_us": 122.2,
+          "p50_us": 124.1,
+          "p90_us": 129.1,
+          "p99_us": 234.6,
+          "p999_us": 492.4,
+          "max_us": 1001.3,
+          "ratio_to_primitive_mean": 1,
+          "ratio_to_primitive_median": 1
+        }
+      }
+    },
+    {
+      "name": "SLH-DSA-SHA2-128s",
+      "sizes": {
+        "public_key": 32,
+        "signature": 7856,
+        "certificate": 7938,
+        "digest_spdu": 7926,
+        "certificate_spdu": 15858
+      },
+      "ops": {
+        "cert_known": {
+          "n": 2000,
+          "mean_us": 1283.42155,
+          "std_us": 151.1814290202252,
+          "min_us": 1135.2,
+          "p50_us": 1250.3,
+          "p90_us": 1521.2,
+          "p99_us": 1794.9,
+          "p999_us": 2196.1,
+          "max_us": 2361,
+          "ratio_to_primitive_mean": 1.026228559027861,
+          "ratio_to_primitive_median": 1.036131598574625
+        },
+        "cert_new": {
+          "n": 2000,
+          "mean_us": 2546.3097000000002,
+          "std_us": 222.50725225464083,
+          "min_us": 2312.8,
+          "p50_us": 2448.3,
+          "p90_us": 2883.2,
+          "p99_us": 3140.7,
+          "p999_us": 4337.9,
+          "max_us": 4579.2,
+          "ratio_to_primitive_mean": 2.0360385364182685,
+          "ratio_to_primitive_median": 2.0289218529874864
+        },
+        "decode": {
+          "n": 2000,
+          "mean_us": 0.135647,
+          "std_us": 0.16054297054371458,
+          "min_us": 0.112,
+          "p50_us": 0.12,
+          "p90_us": 0.125,
+          "p99_us": 0.26,
+          "p999_us": 2.515,
+          "max_us": 3.507,
+          "ratio_to_primitive_mean": 0.00010846383664545158,
+          "ratio_to_primitive_median": 0.0000994447667191514
+        },
+        "digest_hit": {
+          "n": 2000,
+          "mean_us": 1257.43045,
+          "std_us": 156.91062436239926,
+          "min_us": 1088.9,
+          "p50_us": 1209,
+          "p90_us": 1499,
+          "p99_us": 1796,
+          "p999_us": 1932.1,
+          "max_us": 2225.4,
+          "ratio_to_primitive_mean": 1.0054459805363678,
+          "ratio_to_primitive_median": 1.0019060246954503
+        },
+        "digest_unknown": {
+          "n": 2000,
+          "mean_us": 0.15351900000000002,
+          "std_us": 0.1837758162517582,
+          "min_us": 0.123,
+          "p50_us": 0.131,
+          "p90_us": 0.139,
+          "p99_us": 0.885,
+          "p999_us": 2.61,
+          "max_us": 3.884,
+          "ratio_to_primitive_mean": 0.00012275435312224437,
+          "ratio_to_primitive_median": 0.00010856053700174028
+        },
+        "primitive": {
+          "n": 2000,
+          "mean_us": 1250.6196,
+          "std_us": 147.86489835603342,
+          "min_us": 1088.9,
+          "p50_us": 1206.7,
+          "p90_us": 1471.9,
+          "p99_us": 1750.4,
+          "p999_us": 1924.3,
+          "max_us": 2163.6,
+          "ratio_to_primitive_mean": 1,
+          "ratio_to_primitive_median": 1
+        }
+      }
+    }
+  ]
+}
