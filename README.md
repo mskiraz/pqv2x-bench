@@ -9,8 +9,8 @@ It contains a Go implementation of the IEEE 1609.2 message and certificate
 formats, a receiver that verifies them, a benchmark, a traffic simulation,
 and the measured results.
 
-This is the companion code for the paper *Post-Quantum Migration for V2X: A
-Framework for Broadcast Authentication in Mixed Classical/PQ Deployments*.
+This is the companion code for the paper *Post-Quantum V2X Broadcast
+Authentication: A Feasibility Framework for Secure Migration*.
 Every number in that paper's benchmark section comes from the programs here.
 
 > **Not audited.** This is research code for measurement. It has had no
@@ -705,8 +705,8 @@ If you use this code or its results, please cite the paper:
 @article{kiraz_pqv2x,
   author = {Kiraz, Mehmet Sabir and Kardas, Suleyman and Uzunkol, Osmanbey
             and AlMarshoud, Mishri and Al-Bayatti, Ali},
-  title  = {Post-Quantum Migration for {V2X}: A Framework for Broadcast
-            Authentication in Mixed Classical/{PQ} Deployments},
+  title  = {Post-Quantum {V2X} Broadcast Authentication: A Feasibility
+            Framework for Secure Migration},
   year   = {2026},
   note   = {Manuscript under preparation}
 }
