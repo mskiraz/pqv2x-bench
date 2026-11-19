@@ -19,6 +19,17 @@ Every number in that paper's benchmark section comes from the programs here.
 > Do not use it to protect real vehicles, messages, or keys. See
 > [SECURITY.md](SECURITY.md).
 
+> **Scope & Network Modeling Rationale.** This repository measures the
+> **cryptographic wire format, receiver CPU verification overhead, and on-board
+> queueing delay** of post-quantum broadcast authentication in V2X. It
+> deliberately isolates the vehicle's onboard processing pipeline from wireless
+> channel dynamics (such as RF path loss, fading, interference, and packet
+> loss). This decoupling ensures that observed queue build-ups and deadline
+> misses stem strictly from cryptographic verification and caching bottlenecks
+> rather than radio-link noise. The empirical COER wire sizes and execution-time
+> profiles produced here can directly serve as realistic inputs for full-stack
+> vehicular network simulators (such as ns-3 coupled with SUMO).
+
 ## Contents
 
 - [Background in one minute](#background-in-one-minute)
@@ -207,9 +218,12 @@ budget.
 
 ### What it is not
 
-- It is not a radio simulator: there is no packet loss, interference or
-  signal propagation.
-- It is not a security product. The receiver leaves out checks a real system
+- **It is not a radio simulator.** There is no packet loss, interference, or
+  signal propagation. The goal is to isolate the receiver's computational and
+  queueing bottleneck from channel noise; full-stack simulators (such as ns-3
+  coupled with SUMO) can directly consume our measured wire sizes and timing
+  profiles to evaluate channel-level packet delivery ratios.
+- **It is not a security product.** The receiver leaves out checks a real system
   needs, and the code has not been audited (see [SECURITY.md](SECURITY.md)).
 
 ## Quick start
