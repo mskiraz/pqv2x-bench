@@ -1,12 +1,17 @@
 # pqv2x-bench
 
-Receiver-side authentication benchmark and queue simulation for post-quantum
-V2X broadcast authentication.
+**What does it cost a vehicle to check a signed safety message when the
+signature is post-quantum?** This repository measures it: how many bytes the
+message and its certificate take, how long the receiving vehicle needs to
+check them, and whether a receiver on a busy road can keep up.
+
+It contains a Go implementation of the IEEE 1609.2 message and certificate
+formats, a receiver that verifies them, a benchmark, a traffic simulation,
+and the measured results.
 
 This is the companion code for the paper *Post-Quantum Migration for V2X: A
-Framework for Broadcast Authentication in Mixed Classical/PQ Deployments*. It
-produces the exact encoded sizes, the receiver-path timings, and the queue
-simulations reported there.
+Framework for Broadcast Authentication in Mixed Classical/PQ Deployments*.
+Every number in that paper's benchmark section comes from the programs here.
 
 > **Not audited.** This is research code for measurement. It has had no
 > security audit, is not constant-time, omits revocation and replay checks,
@@ -16,6 +21,7 @@ simulations reported there.
 
 ## Contents
 
+- [Background in one minute](#background-in-one-minute)
 - [What it does](#what-it-does)
 - [Quick start](#quick-start)
 - [Signature schemes](#signature-schemes)
@@ -33,23 +39,167 @@ simulations reported there.
 - [Citing](#citing)
 - [License](#license)
 
+## Background in one minute
+
+You can skip this section if you know V2X security.
+
+- **Vehicles broadcast safety messages.** In vehicle-to-everything (V2X)
+  communication, each vehicle sends a short message with its position, speed
+  and heading about ten times per second. In the US standards this is the
+  Basic Safety Message (BSM). Nearby vehicles use it to warn the driver or
+  brake.
+- **Every message is digitally signed.** The signature lets a receiver check
+  that the message comes from a legitimate vehicle and was not changed on the
+  way. The format of the signed message and of the certificates is defined by
+  the standard **IEEE 1609.2**.
+- **Today's signature can be broken by a quantum computer.** Deployed systems
+  use ECDSA P-256, with 64-byte signatures and 33-byte keys. A large quantum
+  computer could forge such signatures. *Post-quantum* signature schemes
+  (Falcon, ML-DSA, SLH-DSA) are designed to resist that, but their signatures
+  and keys are 10 to 120 times larger.
+- **That creates two practical problems.**
+  - *Size.* A signed message has to fit into one radio transmission. In the
+    C-V2X radio configuration the paper analyses, that limit is 2481 bytes.
+  - *Time.* A receiver must check every message from every vehicle in range,
+    which can be 2000 messages per second, and it must do so within
+    milliseconds, because an old safety message is useless.
+
+Four terms used throughout this README:
+
+| Term | Meaning |
+|---|---|
+| **Certificate** | A small signed document that says "this public key belongs to an authorised vehicle". It is signed by an *issuing authority*. A receiver needs the sender's certificate to check the sender's messages. |
+| **Certificate-carrying message** | A message that includes the sender's full certificate. To save space, a vehicle sends this form only once in every five messages. |
+| **Digest message** | The other four messages. Instead of the certificate they carry an 8-byte fingerprint (hash) of it, called a *digest*. The receiver looks the certificate up by that fingerprint. |
+| **Certificate cache** | The receiver's memory of certificates it has already checked, so that it does not check the same certificate again. |
+
 ## What it does
 
-The code answers two questions.
+The repository does three things. Each one answers a question that earlier
+work left open.
 
-1. **How large are IEEE 1609.2 certificates and signed messages when they
-   carry post-quantum keys and signatures?** The structures are encoded with
-   the Canonical Octet Encoding Rules (COER), byte for byte. Nothing is
-   estimated.
-2. **How much longer does the complete receiver authentication path take than
-   the bare signature verification?** Published benchmarks usually report the
-   signature primitive only. A receiver also decodes the message, resolves the
-   signer through a certificate cache, validates a new certificate against its
-   issuer, and checks validity and permissions.
+### 1. It builds real messages and measures their exact size
 
-A third program takes the measured per-path times and simulates the
-authentication queue of one receiver that hears 100 to 200 vehicles, each
-sending ten messages per second.
+**Question:** how many bytes do IEEE 1609.2 certificates and signed messages
+take when they carry post-quantum keys and signatures?
+
+**Why it is open:** earlier studies *estimated* these sizes with a formula
+(fixed overhead + key + signature). IEEE 1609.2 does not define post-quantum
+algorithms yet, so nobody could simply look the sizes up. Estimates are risky
+here, because a few bytes decide whether a message fits into one radio
+transmission.
+
+**What the code does:** it generates keys, creates certificates and signed
+messages, and writes them out in the standard's wire format, the Canonical
+Octet Encoding Rules (COER), field by field. The size reported is the length
+of the actual byte string a vehicle would transmit. Nothing is estimated.
+
+**Example result:**
+
+| Scheme | Digest message | Certificate-carrying message | Fits in 2481 bytes? |
+|---|---:|---:|---|
+| ECDSA P-256 (today) | 132 B | 270 B | yes |
+| Falcon-512 | 736 B | 2345 B | yes, with 136 B to spare |
+| ML-DSA-44 | 2490 B | 6268 B | no: even the digest message is 9 B too large |
+
+So with Falcon-512 a vehicle can still send a message and its certificate in
+one transmission, and with ML-DSA-44 it cannot.
+
+### 2. It times the complete check a receiver performs
+
+**Question:** how much longer does a receiver need for the *whole* check of a
+message than for the signature verification alone?
+
+**Why it is open:** published benchmarks almost always time only the
+mathematical signature verification, often called the *primitive*. A real
+receiver has more to do for each message:
+
+1. decode the received bytes into fields;
+2. check that the message is recent;
+3. find the sender's certificate in the cache, using the 8-byte digest;
+4. if the message carries a certificate the receiver has not seen, verify
+   that certificate's own signature against the issuing authority, and store
+   it in the cache;
+5. check that the certificate is still valid and allows this kind of message;
+6. verify the message signature.
+
+Step 4 is a second signature verification. Whether the extra steps cost 1% or
+100% decides whether a receiver keeps up.
+
+**What the code does:** it implements this receiver and times it, 20,000
+times per case, in four situations:
+
+| Case | Situation | What is timed |
+|---|---|---|
+| Primitive | reference | the signature verification alone |
+| Digest, cached | the normal case, four messages out of five | full check; the certificate is found in the cache |
+| Certificate, cached | one message out of five | full check; the message carries a certificate the receiver already knows |
+| Certificate, new | first contact with a vehicle | full check, including verifying the new certificate |
+
+**Example result for Falcon-512** (median, on the benchmark laptop):
+
+| Case | Time | Compared with the primitive |
+|---|---:|---:|
+| Primitive | 63.1 µs | 1.000× |
+| Digest, cached | 64.2 µs | 1.017× |
+| Certificate, cached | 69.3 µs | 1.098× |
+| Certificate, new | 140.9 µs | 2.233× |
+
+So once a certificate is known, the complete check costs only 2% to 10% more
+than the bare signature verification. A new certificate more than doubles the
+cost.
+
+**Why the ratios matter more than the times.** The laptop used here is much
+faster than a vehicle's on-board computer, so the microsecond values do not
+describe a car. The ratios in the last column are far more portable, because
+on any processor the work is dominated by the same signature and hash
+operations. The paper therefore multiplies these ratios by a published
+verification time for an automotive-class ARM processor (0.446 ms).
+
+### 3. It simulates a receiver on a busy road
+
+**Question:** given those times, can one receiver check all messages from 100
+to 200 nearby vehicles quickly enough?
+
+**The idea:** messages arrive at the receiver and wait in a queue; one
+verifier checks them one at a time. If messages arrive faster than they can
+be checked, the queue grows and messages wait. The simulation measures that
+waiting time.
+
+**What the code does:**
+
+- It places 100, 150 or 200 vehicles around one receiver. Each sends 10
+  messages per second, and one message in five carries the certificate.
+- Messages arrive the way the C-V2X radio delivers them: in 1 ms time slots,
+  with at most two Falcon-512 messages per slot.
+- Each message takes as long to check as measured in step 2, scaled to the
+  automotive-class processor.
+- It repeats this for 100,000 random arrangements of the vehicles' time slots
+  and reports the average delay, the worst delay, and the share of messages
+  that take longer than a 10 ms deadline.
+
+It does this for three situations:
+
+| Situation | Meaning | Result for Falcon-512 |
+|---|---|---|
+| **Steady** | the receiver already knows every vehicle's certificate | delay never exceeds 0.98 ms, even with 200 vehicles |
+| **No caching** | the receiver re-checks every certificate it is sent | works up to 150 vehicles; with 200 the queue grows without limit |
+| **Cold start** | all vehicles are new at once, for example when a car enters a dense area | fine up to 150 vehicles; with 200, 11.9% of messages miss the 10 ms deadline in the first second |
+
+### What you get when you run it
+
+- A table of encoded sizes and a table of timings for all four schemes
+  (`results/bench_<tag>.md`), plus the same data as JSON.
+- Every individual timing sample (`results/raw/`), so the distributions can
+  be re-analysed.
+- A table of queue delays for each situation and vehicle count.
+
+### What it is not
+
+- It is not a radio simulator: there is no packet loss, interference or
+  signal propagation.
+- It is not a security product. The receiver leaves out checks a real system
+  needs, and the code has not been audited (see [SECURITY.md](SECURITY.md)).
 
 ## Quick start
 
@@ -453,8 +603,8 @@ Copy the binary to the board and run `./bench-arm64 -tag rpi4`.
 **Continuous integration.** `.github/workflows/bench.yml` runs the tests, the
 benchmark, and the measured-mode simulation on GitHub's `ubuntu-24.04`
 (x86-64) and `ubuntu-24.04-arm` (64-bit ARM) runners, and uploads the result
-files as artifacts. It runs on a push to `main` or manually from the Actions
-tab. Hosted runners are shared machines, so expect more timing noise than on
+files as artifacts. It runs manually from the Actions tab, or on a push to
+`main` that changes more than documentation. Hosted runners are shared machines, so expect more timing noise than on
 a dedicated board. This workflow has not been run yet.
 
 ## Getting stable measurements

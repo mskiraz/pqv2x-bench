@@ -1,11 +1,13 @@
 name: bench
 
 # Runs the tests and the benchmark on x86-64 and on 64-bit ARM runners.
-# Trigger manually from the Actions tab, or on every push to main.
+# Trigger manually from the Actions tab, or on a push to main that changes
+# more than documentation.
 on:
   workflow_dispatch:
   push:
     branches: [main]
+    paths-ignore: ['**.md', 'LICENSE']
 
 jobs:
   bench:
