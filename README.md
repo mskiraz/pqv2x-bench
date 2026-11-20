@@ -42,6 +42,7 @@ Every number in that paper's benchmark section comes from the programs here.
 - [The benchmark: `cmd/bench`](#the-benchmark-cmdbench)
 - [The queue simulation: `cmd/queuesim`](#the-queue-simulation-cmdqueuesim)
 - [Results in this repository](#results-in-this-repository)
+- [Results, version 2 (2026-11-20)](#results-version-2-2026-11-20)
 - [Reproducing the paper's tables](#reproducing-the-papers-tables)
 - [Running on ARM](#running-on-arm)
 - [Getting stable measurements](#getting-stable-measurements)
@@ -138,7 +139,8 @@ Step 4 is a second signature verification. Whether the extra steps cost 1% or
 100% decides whether a receiver keeps up.
 
 **What the code does:** it implements this receiver and times it, 20,000
-times per case, in four situations:
+times per case (2,000 for SLH-DSA, whose signing is slow), in four
+situations:
 
 | Case | Situation | What is timed |
 |---|---|---|
@@ -166,12 +168,16 @@ than 1.121 times the primitive, which is the per-message budget of the C-V2X
 radio (see the simulation below). The benchmark therefore supports
 "typically within budget", not a guaranteed worst case.
 
-**Why the ratios matter more than the times.** The laptop used here is much
-faster than a vehicle's on-board computer, so the microsecond values do not
-describe a car. The ratios in the last column are far more portable, because
-on any processor the work is dominated by the same signature and hash
-operations. The paper therefore multiplies these ratios by a published
-verification time for an automotive-class ARM processor (0.446 ms).
+**Why the paper uses ratios, and how far they transfer.** The laptop used
+here is much faster than a vehicle's on-board computer, so the microsecond
+values do not describe a car. The paper therefore multiplies these ratios by
+a published verification time for an ARMv8 processor (0.446 ms). The ratios
+are **not** guaranteed to be portable: the non-signature work is mostly
+SHA-256 hashing and decoding, whose relative cost depends on the processor's
+hash instructions and on the signature library. Native runs on x86-64 and
+ARM64 Linux (see [Results, version 2](#results-version-2-2026-11-20)) measure
+how much they differ; results obtained by multiplying a ratio by 0.446 ms
+are platform-scaled estimates, not measurements.
 
 ### 3. It simulates a receiver on a busy road
 
@@ -187,15 +193,24 @@ waiting time.
 
 - It places 100, 150 or 200 vehicles around one receiver. Each sends 10
   messages per second, and one message in five carries the certificate.
-- Messages arrive the way the C-V2X radio delivers them: in 1 ms time slots,
-  with at most two Falcon-512 messages per slot.
+- Messages arrive in 1 ms time slots (subframes). Two arrival models exist:
+  - the **legacy abstract model** (used for the paper's tables so far) lets
+    at most two Falcon-512 messages arrive per slot, whatever their form, and
+    assumes every message is delivered;
+  - the **certificate-aware model** charges a digest-form Falcon-512 message
+    4 of the 10 subchannels of a slot and a certificate-carrying message all
+    10, so a certificate-carrying message never shares its slot, and it
+    counts the messages that do not fit (see
+    [the queue simulation](#the-queue-simulation-cmdqueuesim)).
 - Each message takes as long to check as measured in step 2, scaled to the
   automotive-class processor.
 - It repeats this for 100,000 random arrangements of the vehicles' time slots
   and reports the average delay, the worst delay, and the share of messages
   that take longer than a 10 ms deadline.
 
-It does this for three situations:
+It does this for three situations. The table below is from the **legacy
+abstract model** with the original laptop ratios; the certificate-aware
+results are in [Results, version 2](#results-version-2-2026-11-20).
 
 | Situation | Meaning | Result for Falcon-512 |
 |---|---|---|
@@ -203,23 +218,40 @@ It does this for three situations:
 | **No caching** | the receiver re-checks every certificate it is sent | works up to 162 vehicles (worst delay 12 ms); with 200 the queue grows without limit |
 | **Cold start** | all vehicles are new at once, for example when a car enters a dense area | almost fully absorbed up to 162 vehicles; with 200, 11.9% of messages miss the 10 ms deadline in the first second |
 
-Why 162 and 200: with Falcon-512 each message occupies 4 of the 10 radio
-subchannels. The radio congestion budget used in the paper (65% occupancy)
-then admits at most 162 vehicles. 200 vehicles is a *stress case* beyond that
-budget.
+Why 162, 125 and 200. The vehicle count a subchannel budget admits depends on
+what is assumed about certificates:
+
+| Assumption | Subchannels per message | Vehicles within 65% | Within 100% (physical) |
+|---|---:|---:|---:|
+| Digest-form messages only (certificates cost nothing on the radio) | 4 | 162 (0.65 x 10000 / 40) | 250 |
+| One message in five carries the certificate in one slot (paper, Sec. V) | 0.8 x 4 + 0.2 x 10 = 5.2 | 125 (0.65 x 10000 / 52) | 192 |
+
+The 162-vehicle case of the legacy simulation therefore matches only the
+digest-only assumption; under the paper's certificate-aware average of 5.2
+subchannels the illustrative 65% budget admits 125 vehicles. 200 vehicles
+offer 104% of the physical subchannel capacity, so lossless single-slot
+delivery is impossible; the certificate-aware model reports the messages that
+cannot be scheduled. The 65% and 30% figures are illustrative policy budgets,
+not physical limits and not measured channel busy ratios.
 
 ### What you get when you run it
 
 - A table of encoded sizes and a table of timings for all four schemes
-  (`results/bench_<tag>.md`), plus the same data as JSON.
+  (`results/bench_<tag>.md`), plus the same data as JSON and CSV, with the
+  measurement environment (CPU and features, OS, Go version, build settings,
+  GOMAXPROCS, garbage-collector setting, library versions).
 - Every individual timing sample (`results/raw/`), so the distributions can
   be re-analysed.
-- A table of queue delays for each situation and vehicle count.
+- A table of queue delays for each situation and vehicle count, with full
+  message accounting.
+- An exact payload-size sweep of the encoded messages (`cmd/sizesweep`).
 
 ### What it is not
 
 - **It is not a radio simulator.** There is no packet loss, interference, or
-  signal propagation. The goal is to isolate the receiver's computational and
+  signal propagation. The certificate-aware model accounts for subchannel
+  capacity with an idealised scheduler; it is not a 3GPP Mode 4 or SAE
+  J3161 MAC implementation. The goal is to isolate the receiver's computational and
   queueing bottleneck from channel noise; full-stack simulators (such as ns-3
   coupled with SUMO) can directly consume our measured wire sizes and timing
   profiles to evaluate channel-level packet delivery ratios.
@@ -234,18 +266,24 @@ Requires Go 1.25 or later. No C compiler and no other tools are needed.
 git clone https://github.com/mskiraz/pqv2x-bench.git
 cd pqv2x-bench
 
-# 1. Correctness tests (about 45 s; add -short to skip SLH-DSA)
-go test ./internal/...
+# 1. Correctness and regression tests (about 1 minute; add -short to skip SLH-DSA)
+go test ./...
 
-# 2. Benchmark (about 2 minutes); writes results/bench_<tag>.{json,md}
+# 2. Benchmark (about 2 minutes); writes results/bench_<tag>.{json,md,csv}
 go run ./cmd/bench -tag my-machine
 
 # 3. Queue simulation from the benchmark just produced
+#    (legacy abstract model, then the certificate-aware model)
 go run ./cmd/queuesim -mode measured -tag my-machine -configs 100000
+go run ./cmd/queuesim -arrival certaware -mode measured -tag my-machine -configs 100000
+
+# 4. Exact payload-size sweep of the encoded messages
+go run ./cmd/sizesweep -out results/sizesweep
 ```
 
 Step 2 prints two tables: encoded sizes and time per message. Step 3 prints
-the queue results for a C-V2X receiver.
+the queue results for a C-V2X receiver. Step 4 prints the largest payload
+that fits the 2481-byte single-subframe limit for each scheme and form.
 
 ## Signature schemes
 
@@ -271,7 +309,11 @@ Notes:
 ```
 cmd/
   bench/        benchmark: encoded sizes and per-path timing
-  queuesim/     periodic-arrival queue simulation
+  queuesim/     periodic-arrival queue simulation (legacy and
+                certificate-aware arrival models; + tests and golden files)
+  sizesweep/    exact encoded size as a function of payload length
+  benchcompare/ side-by-side report of several benchmark runs
+  queuecompare/ side-by-side report of legacy and certificate-aware runs
 internal/
   coer/         COER subset (ITU-T X.696): integers, lengths, choices, ...
   ieee1609/     IEEE 1609.2 SignedData and explicit certificate, encode/decode
@@ -279,11 +321,15 @@ internal/
   fleet/        test material: issuer, pseudonym certificates, signed messages
   sigs/         one interface over the four signature schemes
   hrtime/       high-resolution clock (performance counter on Windows)
+  hostinfo/     measurement environment recorded with every benchmark run
 third_party/
   dilithium-go/ patched copy of the ML-DSA library (see VENDORING.md there)
-results/        outputs of the runs reported in the paper
+results/        outputs of the runs reported in the paper (never overwritten)
   raw/          one timing sample file per run, scheme and operation
-.github/workflows/bench.yml   CI job for x86-64 and 64-bit ARM runners
+  v2_2026-11-20/  version-2 results: native ARM64/x86-64 runs, certificate-
+                aware simulation, payload sweep, report and paper values
+.github/workflows/bench.yml   CI: native x86-64 and ARM64 benchmarks,
+                analysis (tests, regression, simulations, sweep), report
 ```
 
 How the pieces fit together:
@@ -324,20 +370,33 @@ The path returns an outcome (`Accepted`, `Malformed`, `Stale`,
 `UnknownSigner`, `UnknownIssuer`, `BadCertificate`, `BadSignature`) and the
 path taken (`PathDigestHit`, `PathCertKnown`, `PathCertNew`).
 
-Not included: revocation lists, misbehaviour detection, replay detection, and
-chains longer than one issuer.
+**Scope of the validation.** This is a restricted, one-level experimental
+profile, not full IEEE 1609.2 certificate processing. The issuer must already
+be in the cache (provisioned out of band); its signature over the carried
+certificate, its validity period and its algorithm are checked, but not its
+`certIssuePermissions` or any chain-policy constraint. Not included:
+revocation lists, misbehaviour detection, replay detection, region and
+assurance-level checks, and chains longer than one issuer. Each omitted check
+would add work to the measured paths.
 
 The tests in `internal/receiver` run every scheme through the accepting
 paths and through each rejection: truncated, over-long and empty input; a
 certificate from an unknown issuer; a digest for an unknown certificate; a
 PSID that the certificate does not permit; a tampered payload, signature or
 carried certificate; a valid message relabelled with another sender's
-digest; a stale message; and an expired certificate, cached or carried.
+digest; a stale message; and an expired certificate, cached or carried. A
+cold-start test follows one receiver from an empty cache: digests are
+rejected until their sender's certificate has been validated, an invalid
+certificate is not cached and does not unlock its sender, and a certificate
+with an unsupported key algorithm is refused.
 
 ## Encoding profile
 
-The structures follow the IEEE 1609.2-2022 ASN.1 definitions with the options
-a SAE J2945/1 Basic Safety Message uses.
+The encoder implements a **selected subset** of the IEEE 1609.2-2022 ASN.1
+types, with the options a SAE J2945/1 Basic Safety Message uses, plus
+hypothetical post-quantum extension additions. It is not a full or
+conformance-tested IEEE 1609.2 implementation: it encodes and accepts only
+the structures listed below.
 
 **Secured message** (`Ieee1609Dot2Data` containing `SignedData`):
 
@@ -408,12 +467,33 @@ certificates.
 
 | Operation | Meaning |
 |---|---|
-| `primitive` | signature verification only, with the public key already parsed |
+| `primitive` | the scheme's `Verify` call on the receiver's cached key value (see below for what that call contains) |
 | `decode` | COER decoding of a digest-form message |
 | `digest_hit` | full path; signer given as a digest; certificate cached |
 | `cert_known` | full path; certificate carried and already cached |
 | `cert_new` | full path; certificate carried, validated against its issuer, then cached |
 | `digest_unknown` | digest-form message whose certificate is not cached: decoded, then discarded |
+
+**What `primitive` contains differs by library** (checked against the
+sources of the pinned versions):
+
+- ECDSA P-256: the public key is parsed once into an `*ecdsa.PublicKey` when
+  cached; `primitive` is `ecdsa.Verify`.
+- Falcon-512 (`falcon-go` v0.1.1, `native` package): the cached key holds only
+  the 897-byte encoded public key. Every `Verify` call decodes it, computes
+  SHAKE256 over it, converts it to NTT form, decodes the signature, hashes the
+  nonce and message to a point, and checks the norm. `primitive` therefore
+  includes per-call key decoding; it is not "arithmetic on an already-parsed
+  key". Verification is pure Go; the module's assembly files serve signing
+  only.
+- ML-DSA-44 (`dilithium-go` v0.3.0, vendored): no SIMD on any architecture.
+  The upstream AVX2 assembly is missing, and in the vendored copy the function
+  named `nttAVX2_8` is a scalar Go loop, so CPUs reporting AVX2 run scalar
+  code as well. ML-DSA is used with an empty context over the 32-byte digest.
+- SLH-DSA-SHA2-128s (`lattice-slh-dsa-go` v0.2.0): pure Go, no assembly; its
+  SHA-2 calls go to the standard library, which uses SHA hardware
+  instructions where the CPU provides them (`sha_ni` on x86-64, SHA2 on
+  ARM64). That is why its times differ most between platforms.
 
 ### Method
 
@@ -430,7 +510,12 @@ certificates.
   in batches of 64 and the batch time is divided by 64.
 - For `cert_new`, the certificate is removed from the cache before each
   iteration, outside the timed region.
-- The program runs on one OS thread with the garbage collector enabled.
+- The program runs on one OS thread with the garbage collector enabled
+  (the original methodology). `-gogc -1` disables the collector for a
+  separate sensitivity run; `runtime.GC()` still runs once before each timed
+  loop. GC-on and GC-off runs, and runs on different machines or operating
+  systems, are different experimental conditions and are reported
+  separately.
 - Every timed call's outcome is checked. An unexpected outcome aborts the
   run, so a result table always comes from correct verifications.
 
@@ -446,6 +531,7 @@ certificates.
 | `-out` | `results` | output directory |
 | `-tag` | `<os>-<arch>` | label for this run, used in file names |
 | `-schemes` | all | comma-separated subset: `ecdsa,falcon,mldsa,slhdsa` |
+| `-gogc` | -2 (unchanged) | garbage collector for a sensitivity run: -1 disables it, a positive value sets GOGC |
 
 Example, Falcon only with fewer iterations:
 
@@ -460,8 +546,13 @@ go run ./cmd/bench -schemes falcon -iters 5000 -tag quick
   `sizes` (`public_key`, `signature`, `certificate`, `digest_spdu`,
   `certificate_spdu`, in bytes) and, per operation, `n`, `mean_us`, `std_us`,
   `min_us`, `p50_us`, `p90_us`, `p99_us`, `p999_us`, `max_us`,
-  `ratio_to_primitive_mean`, `ratio_to_primitive_median`. The header records
-  the CPU, operating system, architecture, and Go version.
+  `ratio_to_primitive_mean`, `ratio_to_primitive_median`. Runs made with the
+  current code also record, under `environment`, the CPU model and features,
+  OS and kernel, Go version, compiler and build settings, GOMAXPROCS, the
+  GOGC setting, and the module versions, and per scheme the iteration count,
+  warm-up, fleet size and a description of the implementation. (The two
+  original laptop runs predate these fields.)
+- `results/bench_<tag>.csv`: one row per scheme and operation.
 - `results/raw/<tag>_<scheme>_<operation>.txt`: every timed sample in
   nanoseconds, one per line. Scheme names in file names are `ecdsap256`,
   `falcon512`, `mldsa44`, `slhdsasha2128s`.
@@ -475,19 +566,53 @@ go run ./cmd/bench -schemes falcon -iters 5000 -tag quick
   sender.
 - One receiver with a single serial, first-come-first-served verifier.
 - The delay `T` of a message is its waiting time plus its service time.
-- Two arrival models:
+- Legacy arrival models (`-arrival legacy`, the default; these produced the
+  paper's current tables and reproduce them byte for byte):
   - `unconstrained`: each sender has an independent random phase in the
-    100 ms period, with no channel serialisation. This is the N·D/D/1 queue.
-  - `cv2x`: SAE J3161 C-V2X Mode 4. Each sender holds a distinct
-    semi-persistent resource, drawn at random from 100 subframes with `m`
-    message slots each. All messages of a subframe reach the verifier
-    together at the end of that subframe. `m = 2` corresponds to Falcon-512
-    digest messages occupying 4 of 10 subchannels.
+    100 ms period, with no channel serialisation (a superposition of N
+    periodic deterministic streams served by one deterministic server,
+    often written N·D/D/1). There is no Poisson (M/M/1) model in the code.
+  - `cv2x`: an **abstract** C-V2X receiver-arrival model. Each sender holds a
+    distinct semi-persistent resource, drawn at random from 100 subframes
+    with `m` message slots each. Every message, digest-form or
+    certificate-carrying, uses its sender's slot, so up to `m` messages of
+    any form arrive per subframe, and every message is delivered. All
+    messages of a subframe reach the verifier together at the end of that
+    subframe. `m = 2` corresponds to Falcon-512 *digest-form* messages
+    occupying 4 of 10 subchannels; the radio cost of certificate-carrying
+    messages (10 of 10 subchannels) is not modelled.
+- Certificate-aware arrival model (`-arrival certaware`, model name
+  `cv2x-cert`):
+  - 1-ms subframes with 10 subchannels; a digest-form Falcon-512 message
+    occupies 4, a certificate-carrying message all 10 (`-digest-subch`,
+    `-cert-subch`, `-subchannels`). Two digest-form messages can share a
+    subframe; a certificate-carrying message never shares one.
+  - Senders, preferred subframes, certificate offsets and tie order are drawn
+    exactly as in the legacy `cv2x` model from an identically seeded stream,
+    so both models see the same random configurations.
+  - Each message is generated at the start of its sender's preferred
+    subframe and placed, in generation order, into the earliest subframe at
+    or after that one with enough free subchannels, within a scheduling
+    window (`-sched-window-ms`, default 100, at most one period). Messages
+    that do not fit are counted as **not scheduled**; they are never
+    delivered silently.
+  - This is an idealised, deterministic, centralised scheduler: an upper
+    bound on what a distributed MAC could deliver. It is not an
+    implementation of 3GPP Mode 4 or SAE J3161 resource selection; there are
+    no collisions, no half-duplex losses, no propagation loss and no
+    retransmissions, and every sender is in range.
+  - With the defaults, N senders offer 0.052 N of the physical subchannel
+    capacity (0.52 at N = 100, 0.78 at 150, 0.842 at 162, 1.04 at 200). The
+    report states whether the illustrative 30% and 65% budgets and the
+    physical 100% limit are met.
 - Each case runs many independent random configurations (phases or resource
   choices). A configuration is simulated for 20 periods; the first 10 are
-  discarded as warm-up.
-- A case with utilisation `rho >= 1` is reported as unstable and not
-  simulated.
+  discarded as warm-up. Cold-start cases have no warm-up and measure the
+  first 10 periods (1 s).
+- Legacy model: a case with utilisation `rho >= 1` is reported as unstable
+  and not simulated. Certificate-aware model: every case is simulated and
+  marked unstable when the carried verification work reaches the
+  verifier's capacity.
 
 ### Mode `fixed`
 
@@ -531,20 +656,49 @@ jitter into the simulation and is a sensitivity check, not a prediction.
 | `-arm-primitive-ms` | 0.446 | target-platform primitive verification time |
 | `-deadline-ms` | 10 | authentication deadline `D` |
 | `-configs` | 10000 | random configurations per case |
-| `-m` | 2 | messages per C-V2X subframe |
+| `-m` | 2 | messages per C-V2X subframe (legacy) and digest-form SPS resources per subframe |
 | `-seed` | 7 | random seed |
 | `-senders` | `100,150,200` | comma-separated sender counts `N` |
 | `-out` | none | also write the Markdown report to this file |
+| `-arrival` | `legacy` | `legacy` or `certaware` |
+| `-report` | `standard` | `standard` (original table) or `extended` (full accounting); `certaware` always uses `extended` |
+| `-ext-out` | none | also write the extended report to this file |
+| `-csv` | none | write the per-case accounting as CSV |
+| `-subchannels`, `-digest-subch`, `-cert-subch` | 10, 4, 10 | certificate-aware radio model |
+| `-sched-window-ms` | 100 | certificate-aware scheduling window (1 to 100) |
 
 ### Output columns
+
+Standard table:
 
 | Column | Meaning |
 |---|---|
 | `rho` | utilisation: arrival rate times mean service time in steady state |
 | Mean T, p99.9 T, Max T | delay statistics over all authenticated messages |
-| Pr[T > D] | share of authenticated messages later than the deadline |
+| Pr[T > D] | deadline missed / authenticated |
 | Configs with a miss | share of configurations with at least one late message |
-| Discarded | share of messages discarded because the signer was unknown |
+| Discarded | unknown-signer discards / generated messages |
+
+The extended table and the CSV add, for messages generated in the measured
+periods: `generated`; `not_scheduled_digest` and `not_scheduled_cert`
+(certificate-aware model only); `scheduled`; `unknown_signer_discarded`;
+`authenticated`; `authentication_deadline_missed`;
+`p_miss_given_authenticated` (missed / authenticated);
+`on_time_fraction_of_generated` ((authenticated - missed) / generated, a
+receiver-side figure that excludes all unmodelled network effects); p99 delay;
+mean and maximum scheduling delay; verifier utilisation (busy time / measured
+time); maximum backlog (messages waiting or in service, including the
+arriving one); offered subchannel occupancy and the 30% / 65% / 100% budget
+checks. Identities that the tests enforce: generated = scheduled + not
+scheduled; scheduled = unknown-signer discarded + authenticated; missed <=
+authenticated. Unknown-signer discards are never counted as authenticated and
+never enter the delay statistics or their denominator.
+
+The roughly 20% discard rate of the cold-start cases follows from the
+transmission schedule: each sender's certificate offset is uniform over the
+five messages of a 500 ms cycle, so on average 2 of its 10 messages in the
+first second precede its first certificate. It is not a measured
+over-the-air loss rate.
 
 ## Results in this repository
 
@@ -591,7 +745,12 @@ Decoding alone takes 0.12 to 0.13 microseconds.
 | Cold start | 200 (stress) | | 3.46 | 28.62 | 0.119 |
 
 `N = 162` is the largest all-Falcon-512 load within a 65% subchannel
-occupancy budget; `N = 200` is beyond it. The table uses median service
+occupancy budget **if certificate-carrying messages cost no more radio
+resources than digest-form ones** (4 subchannels); with the paper's
+certificate-aware average of 5.2 subchannels the 65% budget admits 125
+vehicles, and `N = 200` exceeds even the physical capacity (104%). This table
+uses the legacy abstract arrival model; see version 2 for the
+certificate-aware model. The table uses median service
 times. With service times drawn from the measured samples ("measured
 jitter" rows in the result files), the steady-state maximum delay is 9.0 ms
 at `N = 162` and 12.3 ms at `N = 200`.
@@ -603,11 +762,57 @@ Files:
 - `results/queuesim_measured_run1.md` and `_run2.md`
 - `results/raw/`: 48 sample files, about 4 MB
 
+## Results, version 2 (2026-11-20)
+
+Directory [`results/v2_2026-11-20/`](results/v2_2026-11-20/); the original
+results above are unchanged and regression-tested. Start with
+[`implementation_report.md`](results/v2_2026-11-20/implementation_report.md);
+[`paper_update_values.md`](results/v2_2026-11-20/paper_update_values.md)
+lists the values and sentences for the manuscript. Labels: **[M]**
+measurement, **[E]** ratio multiplied by 0.446 ms (platform-scaled estimate),
+**[S]** simulation.
+
+**Native receiver-path ratios, Falcon-512, median, GC enabled** [M]
+([`arm_benchmark_comparison.md`](results/v2_2026-11-20/arm_benchmark_comparison.md)):
+
+| Platform | Primitive (us) | Digest, cached | Certificate, cached | Certificate, new |
+|---|---:|---:|---:|---:|
+| Laptop i9-10980HK, Windows (published) | 63.10 | 1.017 | 1.098 | 2.233 |
+| x86-64 Linux, Xeon 6975P-C (GitHub runner) | 38.46 | 1.011 | 1.041 | 2.061 |
+| ARM64 Linux, Neoverse-N2 (GitHub runner) | 40.15 | 1.008 | 1.035 | 2.082 |
+
+The cached-digest ratio transfers between platforms; the certificate paths
+are lower on both Linux hosts than on the laptop, so the laptop ratios are
+the most conservative. Scaled to 0.446 ms [E], the ARM64 ratios give 0.449,
+0.462 and 0.929 ms instead of 0.454, 0.490 and 0.996 ms.
+
+**Queue, Falcon-512, median work, laptop ratios** [S]
+([`queue_comparison.md`](results/v2_2026-11-20/queue_comparison.md)):
+
+| Scenario | N | Legacy max T | Cert-aware offered occupancy | Cert-aware not scheduled | Cert-aware max T | Deadline misses (cert-aware) |
+|---|---:|---:|---:|---:|---:|---:|
+| Steady | 100 / 162 | 0.98 ms | 0.52 / 0.84 | 0 | 0.91 ms | 0 |
+| No caching | 100 / 162 | 5.32 / 12.07 ms | 0.52 / 0.84 | 0 | 1.00 ms | 0 |
+| Cold start | 100 / 162 | 5.22 / 11.24 ms | 0.52 / 0.84 | 0 | 1.00 ms | 0 |
+| Steady | 200 | 0.98 ms | 1.04 | 12.7% of generated | 0.91 ms | 0 |
+| Cold start | 200 | 28.62 ms (11.9% misses) | 1.04 | 6.4% of generated | 1.00 ms | 0 |
+
+When a certificate-carrying message occupies its subframe alone, each
+subframe's verification work fits in 1 ms and the receiver never queues
+across subframes; at 200 senders the radio, not the verifier, is the
+binding constraint.
+
+**Payload sensitivity** [M]
+([`payload_sensitivity.md`](results/v2_2026-11-20/payload_sensitivity.md)):
+the Falcon-512 certificate-carrying message fits the 2481-byte limit for
+payloads up to 174 bytes (digest form: 1782 bytes); an ML-DSA-44 digest-form
+message fits only up to 30 bytes.
+
 ## Reproducing the paper's tables
 
 | Paper table | Command |
 |---|---|
-| Fixed-work receiver delay (M/M/1 rows are analytic) | `go run ./cmd/queuesim -mode fixed -configs 100000` |
+| Fixed-work receiver delay (legacy abstract model) | `go run ./cmd/queuesim -mode fixed -configs 100000` |
 | Encoded IEEE 1609.2 sizes | `go run ./cmd/bench` (sizes table) |
 | Receiver authentication time | `go run ./cmd/bench` (timing table) |
 | C-V2X queue with measured ratios | `go run ./cmd/queuesim -mode measured -configs 100000 -senders 100,150,162,200 -tag <tag>` |
@@ -641,12 +846,25 @@ $env:GOOS="linux"; $env:GOARCH="arm64"; go build -o bench-arm64 ./cmd/bench
 
 Copy the binary to the board and run `./bench-arm64 -tag rpi4`.
 
-**Continuous integration.** `.github/workflows/bench.yml` runs the tests, the
-benchmark, and the measured-mode simulation on GitHub's `ubuntu-24.04`
-(x86-64) and `ubuntu-24.04-arm` (64-bit ARM) runners, and uploads the result
-files as artifacts. It runs manually from the Actions tab, or on a push to
-`main` that changes more than documentation. Hosted runners are shared machines, so expect more timing noise than on
-a dedicated board. This workflow has not been run yet.
+**Continuous integration.** `.github/workflows/bench.yml` has three jobs:
+
+- `bench` (matrix `ubuntu-24.04` x86-64 and `ubuntu-24.04-arm` ARM64): short
+  tests, the benchmark with the garbage collector enabled (original
+  methodology) and, separately, disabled, the environment description, and
+  both queue models from that runner's own Falcon-512 ratios;
+- `analysis`: the full test suite, the legacy simulations compared byte for
+  byte with `results/queuesim_*.md`, the certificate-aware simulations, the
+  model comparison, and the payload-size sweep;
+- `report`: the cross-platform benchmark comparison.
+
+Every output, including raw samples, is uploaded as an artifact. Run it from
+the Actions tab (bench, "Run workflow") or with
+`gh workflow run bench.yml --ref <branch>`; it also runs on a push to `main`
+that changes more than documentation. Hosted runners are shared virtual
+machines with server CPUs (Neoverse-N2 on the ARM runner; the x86 host type
+varies between runs), not automotive processors, so expect more timing noise
+than on a dedicated board. The results of runs 44820736544 and 44822427947
+are in [`results/v2_2026-11-20/`](results/v2_2026-11-20/).
 
 ## Getting stable measurements
 
@@ -661,11 +879,13 @@ a dedicated board. This workflow has not been run yet.
 
 ## Limitations
 
-- **Platform.** The published runs are on an x86 laptop, not an automotive
-  processor. The paper applies the path-to-primitive ratios to a published
-  ARMv8 primitive time. That assumes the non-signature work (hashing,
-  decoding, lookup) scales with the platform the way signature verification
-  does.
+- **Platform.** The published runs are on an x86 laptop; the version-2 runs
+  are on x86-64 and ARM64 server cores. None is an automotive processor. The
+  paper applies the path-to-primitive ratios to a published ARMv8 primitive
+  time, which assumes the non-signature work (hashing, decoding, lookup)
+  scales with the platform the way signature verification does. The native
+  runs show that this holds closely for cached digests but not exactly for
+  the certificate paths (see version 2 results).
 - **Implementations.** All schemes are pure Go. Optimised C or assembly will
   have different absolute times and possibly different ratios.
 - **Receiver path.** No revocation check, misbehaviour check, or replay

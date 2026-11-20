@@ -1,0 +1,1126 @@
+{
+  "limit_bytes": 2481,
+  "note": "Sizes are COER encoder output for the implemented IEEE 1609.2-2022 subset with hypothetical PQ extension additions; only the application payload varies; the issuing authority uses the same scheme as the pseudonym certificate; region, assurance level and other optional certificate fields are not present.",
+  "sweep_points": [
+    39,
+    64,
+    100,
+    128,
+    160,
+    170,
+    174,
+    175,
+    176,
+    200,
+    256,
+    400
+  ],
+  "summary": [
+    {
+      "scheme": "ECDSA P-256",
+      "format": "digest",
+      "certificate_bytes": 144,
+      "spdu_bytes_at_39": 132,
+      "spdu_bytes_at_0": 93,
+      "max_fitting_payload_bytes": 2386,
+      "spdu_bytes_at_max": 2481,
+      "first_exceeding_payload_bytes": 2387,
+      "spdu_bytes_at_first_exceeding": 2482,
+      "size_nondecreasing_over_scan": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "certificate",
+      "certificate_bytes": 144,
+      "spdu_bytes_at_39": 270,
+      "spdu_bytes_at_0": 231,
+      "max_fitting_payload_bytes": 2248,
+      "spdu_bytes_at_max": 2481,
+      "first_exceeding_payload_bytes": 2249,
+      "spdu_bytes_at_first_exceeding": 2482,
+      "size_nondecreasing_over_scan": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "digest",
+      "certificate_bytes": 1615,
+      "spdu_bytes_at_39": 736,
+      "spdu_bytes_at_0": 697,
+      "max_fitting_payload_bytes": 1782,
+      "spdu_bytes_at_max": 2481,
+      "first_exceeding_payload_bytes": 1783,
+      "spdu_bytes_at_first_exceeding": 2482,
+      "size_nondecreasing_over_scan": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "certificate",
+      "certificate_bytes": 1615,
+      "spdu_bytes_at_39": 2345,
+      "spdu_bytes_at_0": 2306,
+      "max_fitting_payload_bytes": 174,
+      "spdu_bytes_at_max": 2481,
+      "first_exceeding_payload_bytes": 175,
+      "spdu_bytes_at_first_exceeding": 2482,
+      "size_nondecreasing_over_scan": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "digest",
+      "certificate_bytes": 3784,
+      "spdu_bytes_at_39": 2490,
+      "spdu_bytes_at_0": 2451,
+      "max_fitting_payload_bytes": 30,
+      "spdu_bytes_at_max": 2481,
+      "first_exceeding_payload_bytes": 31,
+      "spdu_bytes_at_first_exceeding": 2482,
+      "size_nondecreasing_over_scan": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "certificate",
+      "certificate_bytes": 3784,
+      "spdu_bytes_at_39": 6268,
+      "spdu_bytes_at_0": 6229,
+      "max_fitting_payload_bytes": -1,
+      "spdu_bytes_at_max": 0,
+      "first_exceeding_payload_bytes": 0,
+      "spdu_bytes_at_first_exceeding": 6229,
+      "size_nondecreasing_over_scan": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "digest",
+      "certificate_bytes": 7938,
+      "spdu_bytes_at_39": 7926,
+      "spdu_bytes_at_0": 7887,
+      "max_fitting_payload_bytes": -1,
+      "spdu_bytes_at_max": 0,
+      "first_exceeding_payload_bytes": 0,
+      "spdu_bytes_at_first_exceeding": 7887,
+      "size_nondecreasing_over_scan": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "certificate",
+      "certificate_bytes": 7938,
+      "spdu_bytes_at_39": 15858,
+      "spdu_bytes_at_0": 15819,
+      "max_fitting_payload_bytes": -1,
+      "spdu_bytes_at_max": 0,
+      "first_exceeding_payload_bytes": 0,
+      "spdu_bytes_at_first_exceeding": 15819,
+      "size_nondecreasing_over_scan": true
+    }
+  ],
+  "rows": [
+    {
+      "scheme": "ECDSA P-256",
+      "format": "digest",
+      "payload_bytes": 0,
+      "spdu_bytes": 93,
+      "remaining_bytes": 2388,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "digest",
+      "payload_bytes": 39,
+      "spdu_bytes": 132,
+      "remaining_bytes": 2349,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "digest",
+      "payload_bytes": 64,
+      "spdu_bytes": 157,
+      "remaining_bytes": 2324,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "digest",
+      "payload_bytes": 100,
+      "spdu_bytes": 193,
+      "remaining_bytes": 2288,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "digest",
+      "payload_bytes": 128,
+      "spdu_bytes": 222,
+      "remaining_bytes": 2259,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "digest",
+      "payload_bytes": 160,
+      "spdu_bytes": 254,
+      "remaining_bytes": 2227,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "digest",
+      "payload_bytes": 170,
+      "spdu_bytes": 264,
+      "remaining_bytes": 2217,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "digest",
+      "payload_bytes": 174,
+      "spdu_bytes": 268,
+      "remaining_bytes": 2213,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "digest",
+      "payload_bytes": 175,
+      "spdu_bytes": 269,
+      "remaining_bytes": 2212,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "digest",
+      "payload_bytes": 176,
+      "spdu_bytes": 270,
+      "remaining_bytes": 2211,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "digest",
+      "payload_bytes": 200,
+      "spdu_bytes": 294,
+      "remaining_bytes": 2187,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "digest",
+      "payload_bytes": 256,
+      "spdu_bytes": 351,
+      "remaining_bytes": 2130,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "digest",
+      "payload_bytes": 400,
+      "spdu_bytes": 495,
+      "remaining_bytes": 1986,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "digest",
+      "payload_bytes": 2386,
+      "spdu_bytes": 2481,
+      "remaining_bytes": 0,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "digest",
+      "payload_bytes": 2387,
+      "spdu_bytes": 2482,
+      "remaining_bytes": -1,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "certificate",
+      "payload_bytes": 0,
+      "spdu_bytes": 231,
+      "remaining_bytes": 2250,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "certificate",
+      "payload_bytes": 39,
+      "spdu_bytes": 270,
+      "remaining_bytes": 2211,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "certificate",
+      "payload_bytes": 64,
+      "spdu_bytes": 295,
+      "remaining_bytes": 2186,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "certificate",
+      "payload_bytes": 100,
+      "spdu_bytes": 331,
+      "remaining_bytes": 2150,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "certificate",
+      "payload_bytes": 128,
+      "spdu_bytes": 360,
+      "remaining_bytes": 2121,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "certificate",
+      "payload_bytes": 160,
+      "spdu_bytes": 392,
+      "remaining_bytes": 2089,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "certificate",
+      "payload_bytes": 170,
+      "spdu_bytes": 402,
+      "remaining_bytes": 2079,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "certificate",
+      "payload_bytes": 174,
+      "spdu_bytes": 406,
+      "remaining_bytes": 2075,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "certificate",
+      "payload_bytes": 175,
+      "spdu_bytes": 407,
+      "remaining_bytes": 2074,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "certificate",
+      "payload_bytes": 176,
+      "spdu_bytes": 408,
+      "remaining_bytes": 2073,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "certificate",
+      "payload_bytes": 200,
+      "spdu_bytes": 432,
+      "remaining_bytes": 2049,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "certificate",
+      "payload_bytes": 256,
+      "spdu_bytes": 489,
+      "remaining_bytes": 1992,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "certificate",
+      "payload_bytes": 400,
+      "spdu_bytes": 633,
+      "remaining_bytes": 1848,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "certificate",
+      "payload_bytes": 2248,
+      "spdu_bytes": 2481,
+      "remaining_bytes": 0,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ECDSA P-256",
+      "format": "certificate",
+      "payload_bytes": 2249,
+      "spdu_bytes": 2482,
+      "remaining_bytes": -1,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "digest",
+      "payload_bytes": 0,
+      "spdu_bytes": 697,
+      "remaining_bytes": 1784,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "digest",
+      "payload_bytes": 39,
+      "spdu_bytes": 736,
+      "remaining_bytes": 1745,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "digest",
+      "payload_bytes": 64,
+      "spdu_bytes": 761,
+      "remaining_bytes": 1720,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "digest",
+      "payload_bytes": 100,
+      "spdu_bytes": 797,
+      "remaining_bytes": 1684,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "digest",
+      "payload_bytes": 128,
+      "spdu_bytes": 826,
+      "remaining_bytes": 1655,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "digest",
+      "payload_bytes": 160,
+      "spdu_bytes": 858,
+      "remaining_bytes": 1623,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "digest",
+      "payload_bytes": 170,
+      "spdu_bytes": 868,
+      "remaining_bytes": 1613,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "digest",
+      "payload_bytes": 174,
+      "spdu_bytes": 872,
+      "remaining_bytes": 1609,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "digest",
+      "payload_bytes": 175,
+      "spdu_bytes": 873,
+      "remaining_bytes": 1608,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "digest",
+      "payload_bytes": 176,
+      "spdu_bytes": 874,
+      "remaining_bytes": 1607,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "digest",
+      "payload_bytes": 200,
+      "spdu_bytes": 898,
+      "remaining_bytes": 1583,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "digest",
+      "payload_bytes": 256,
+      "spdu_bytes": 955,
+      "remaining_bytes": 1526,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "digest",
+      "payload_bytes": 400,
+      "spdu_bytes": 1099,
+      "remaining_bytes": 1382,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "digest",
+      "payload_bytes": 1782,
+      "spdu_bytes": 2481,
+      "remaining_bytes": 0,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "digest",
+      "payload_bytes": 1783,
+      "spdu_bytes": 2482,
+      "remaining_bytes": -1,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "certificate",
+      "payload_bytes": 0,
+      "spdu_bytes": 2306,
+      "remaining_bytes": 175,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "certificate",
+      "payload_bytes": 39,
+      "spdu_bytes": 2345,
+      "remaining_bytes": 136,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "certificate",
+      "payload_bytes": 64,
+      "spdu_bytes": 2370,
+      "remaining_bytes": 111,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "certificate",
+      "payload_bytes": 100,
+      "spdu_bytes": 2406,
+      "remaining_bytes": 75,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "certificate",
+      "payload_bytes": 128,
+      "spdu_bytes": 2435,
+      "remaining_bytes": 46,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "certificate",
+      "payload_bytes": 160,
+      "spdu_bytes": 2467,
+      "remaining_bytes": 14,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "certificate",
+      "payload_bytes": 170,
+      "spdu_bytes": 2477,
+      "remaining_bytes": 4,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "certificate",
+      "payload_bytes": 174,
+      "spdu_bytes": 2481,
+      "remaining_bytes": 0,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "certificate",
+      "payload_bytes": 175,
+      "spdu_bytes": 2482,
+      "remaining_bytes": -1,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "certificate",
+      "payload_bytes": 176,
+      "spdu_bytes": 2483,
+      "remaining_bytes": -2,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "certificate",
+      "payload_bytes": 200,
+      "spdu_bytes": 2507,
+      "remaining_bytes": -26,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "certificate",
+      "payload_bytes": 256,
+      "spdu_bytes": 2564,
+      "remaining_bytes": -83,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "Falcon-512",
+      "format": "certificate",
+      "payload_bytes": 400,
+      "spdu_bytes": 2708,
+      "remaining_bytes": -227,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "digest",
+      "payload_bytes": 0,
+      "spdu_bytes": 2451,
+      "remaining_bytes": 30,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "digest",
+      "payload_bytes": 30,
+      "spdu_bytes": 2481,
+      "remaining_bytes": 0,
+      "fits": true,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "digest",
+      "payload_bytes": 31,
+      "spdu_bytes": 2482,
+      "remaining_bytes": -1,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "digest",
+      "payload_bytes": 39,
+      "spdu_bytes": 2490,
+      "remaining_bytes": -9,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "digest",
+      "payload_bytes": 64,
+      "spdu_bytes": 2515,
+      "remaining_bytes": -34,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "digest",
+      "payload_bytes": 100,
+      "spdu_bytes": 2551,
+      "remaining_bytes": -70,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "digest",
+      "payload_bytes": 128,
+      "spdu_bytes": 2580,
+      "remaining_bytes": -99,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "digest",
+      "payload_bytes": 160,
+      "spdu_bytes": 2612,
+      "remaining_bytes": -131,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "digest",
+      "payload_bytes": 170,
+      "spdu_bytes": 2622,
+      "remaining_bytes": -141,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "digest",
+      "payload_bytes": 174,
+      "spdu_bytes": 2626,
+      "remaining_bytes": -145,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "digest",
+      "payload_bytes": 175,
+      "spdu_bytes": 2627,
+      "remaining_bytes": -146,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "digest",
+      "payload_bytes": 176,
+      "spdu_bytes": 2628,
+      "remaining_bytes": -147,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "digest",
+      "payload_bytes": 200,
+      "spdu_bytes": 2652,
+      "remaining_bytes": -171,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "digest",
+      "payload_bytes": 256,
+      "spdu_bytes": 2709,
+      "remaining_bytes": -228,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "digest",
+      "payload_bytes": 400,
+      "spdu_bytes": 2853,
+      "remaining_bytes": -372,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "certificate",
+      "payload_bytes": 0,
+      "spdu_bytes": 6229,
+      "remaining_bytes": -3748,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "certificate",
+      "payload_bytes": 39,
+      "spdu_bytes": 6268,
+      "remaining_bytes": -3787,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "certificate",
+      "payload_bytes": 64,
+      "spdu_bytes": 6293,
+      "remaining_bytes": -3812,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "certificate",
+      "payload_bytes": 100,
+      "spdu_bytes": 6329,
+      "remaining_bytes": -3848,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "certificate",
+      "payload_bytes": 128,
+      "spdu_bytes": 6358,
+      "remaining_bytes": -3877,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "certificate",
+      "payload_bytes": 160,
+      "spdu_bytes": 6390,
+      "remaining_bytes": -3909,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "certificate",
+      "payload_bytes": 170,
+      "spdu_bytes": 6400,
+      "remaining_bytes": -3919,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "certificate",
+      "payload_bytes": 174,
+      "spdu_bytes": 6404,
+      "remaining_bytes": -3923,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "certificate",
+      "payload_bytes": 175,
+      "spdu_bytes": 6405,
+      "remaining_bytes": -3924,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "certificate",
+      "payload_bytes": 176,
+      "spdu_bytes": 6406,
+      "remaining_bytes": -3925,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "certificate",
+      "payload_bytes": 200,
+      "spdu_bytes": 6430,
+      "remaining_bytes": -3949,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "certificate",
+      "payload_bytes": 256,
+      "spdu_bytes": 6487,
+      "remaining_bytes": -4006,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "ML-DSA-44",
+      "format": "certificate",
+      "payload_bytes": 400,
+      "spdu_bytes": 6631,
+      "remaining_bytes": -4150,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "digest",
+      "payload_bytes": 0,
+      "spdu_bytes": 7887,
+      "remaining_bytes": -5406,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "digest",
+      "payload_bytes": 39,
+      "spdu_bytes": 7926,
+      "remaining_bytes": -5445,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "digest",
+      "payload_bytes": 64,
+      "spdu_bytes": 7951,
+      "remaining_bytes": -5470,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "digest",
+      "payload_bytes": 100,
+      "spdu_bytes": 7987,
+      "remaining_bytes": -5506,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "digest",
+      "payload_bytes": 128,
+      "spdu_bytes": 8016,
+      "remaining_bytes": -5535,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "digest",
+      "payload_bytes": 160,
+      "spdu_bytes": 8048,
+      "remaining_bytes": -5567,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "digest",
+      "payload_bytes": 170,
+      "spdu_bytes": 8058,
+      "remaining_bytes": -5577,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "digest",
+      "payload_bytes": 174,
+      "spdu_bytes": 8062,
+      "remaining_bytes": -5581,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "digest",
+      "payload_bytes": 175,
+      "spdu_bytes": 8063,
+      "remaining_bytes": -5582,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "digest",
+      "payload_bytes": 176,
+      "spdu_bytes": 8064,
+      "remaining_bytes": -5583,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "digest",
+      "payload_bytes": 200,
+      "spdu_bytes": 8088,
+      "remaining_bytes": -5607,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "digest",
+      "payload_bytes": 256,
+      "spdu_bytes": 8145,
+      "remaining_bytes": -5664,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "digest",
+      "payload_bytes": 400,
+      "spdu_bytes": 8289,
+      "remaining_bytes": -5808,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "certificate",
+      "payload_bytes": 0,
+      "spdu_bytes": 15819,
+      "remaining_bytes": -13338,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "certificate",
+      "payload_bytes": 39,
+      "spdu_bytes": 15858,
+      "remaining_bytes": -13377,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "certificate",
+      "payload_bytes": 64,
+      "spdu_bytes": 15883,
+      "remaining_bytes": -13402,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "certificate",
+      "payload_bytes": 100,
+      "spdu_bytes": 15919,
+      "remaining_bytes": -13438,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "certificate",
+      "payload_bytes": 128,
+      "spdu_bytes": 15948,
+      "remaining_bytes": -13467,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "certificate",
+      "payload_bytes": 160,
+      "spdu_bytes": 15980,
+      "remaining_bytes": -13499,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "certificate",
+      "payload_bytes": 170,
+      "spdu_bytes": 15990,
+      "remaining_bytes": -13509,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "certificate",
+      "payload_bytes": 174,
+      "spdu_bytes": 15994,
+      "remaining_bytes": -13513,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "certificate",
+      "payload_bytes": 175,
+      "spdu_bytes": 15995,
+      "remaining_bytes": -13514,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "certificate",
+      "payload_bytes": 176,
+      "spdu_bytes": 15996,
+      "remaining_bytes": -13515,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "certificate",
+      "payload_bytes": 200,
+      "spdu_bytes": 16020,
+      "remaining_bytes": -13539,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "certificate",
+      "payload_bytes": 256,
+      "spdu_bytes": 16077,
+      "remaining_bytes": -13596,
+      "fits": false,
+      "signed_and_verified": true
+    },
+    {
+      "scheme": "SLH-DSA-SHA2-128s",
+      "format": "certificate",
+      "payload_bytes": 400,
+      "spdu_bytes": 16221,
+      "remaining_bytes": -13740,
+      "fits": false,
+      "signed_and_verified": true
+    }
+  ]
+}

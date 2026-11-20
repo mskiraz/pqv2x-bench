@@ -1,0 +1,449 @@
+{
+  "tag": "gha-ubuntu-24.04-arm-run44820736544-1",
+  "time_utc": "2026-11-20T21:29:45Z",
+  "go_version": "go1.25.6",
+  "goos": "linux",
+  "goarch": "arm64",
+  "cpu": "ARM implementer 0x41, part 0xd49",
+  "num_cpu": 4,
+  "iterations": 20000,
+  "gc_mode": "enabled (GC percent 100)",
+  "environment": {
+    "cpu": "ARM implementer 0x41, part 0xd49",
+    "cpu_features": [
+      "aes",
+      "asimd",
+      "atomics",
+      "sha2",
+      "sha3",
+      "sha512"
+    ],
+    "num_cpu": 4,
+    "goos": "linux",
+    "goarch": "arm64",
+    "os_version": "Ubuntu 24.04.5 LTS",
+    "kernel": "7.0.0-1017-azure",
+    "go_version": "go1.25.6",
+    "compiler": "gc",
+    "build_settings": {
+      "-buildmode": "exe",
+      "-compiler": "gc",
+      "CGO_CFLAGS": "",
+      "CGO_CPPFLAGS": "",
+      "CGO_CXXFLAGS": "",
+      "CGO_ENABLED": "1",
+      "CGO_LDFLAGS": "",
+      "GOARCH": "arm64",
+      "GOARM64": "v8.0",
+      "GOOS": "linux"
+    },
+    "gomaxprocs": 4,
+    "gogc_env": "",
+    "gc_percent": 100,
+    "modules": [
+      {
+        "path": "github.com/lattice-safe/dilithium-go",
+        "version": "v0.3.0",
+        "replace": "./third_party/dilithium-go@(devel)"
+      },
+      {
+        "path": "github.com/lattice-safe/falcon-go",
+        "version": "v0.1.1"
+      },
+      {
+        "path": "github.com/lattice-safe/lattice-slh-dsa-go",
+        "version": "v0.2.0"
+      },
+      {
+        "path": "golang.org/x/crypto",
+        "version": "v0.51.0"
+      },
+      {
+        "path": "golang.org/x/sys",
+        "version": "v0.44.0"
+      }
+    ]
+  },
+  "schemes": [
+    {
+      "name": "ECDSA P-256",
+      "implementation": "Go standard library crypto/ecdsa; the public key is parsed once into an *ecdsa.PublicKey when cached",
+      "iterations": 20000,
+      "warmup": 1000,
+      "fleet_senders": 50,
+      "fleet_messages_per_sender": 4,
+      "sizes": {
+        "public_key": 33,
+        "signature": 64,
+        "certificate": 144,
+        "digest_spdu": 132,
+        "certificate_spdu": 270
+      },
+      "ops": {
+        "cert_known": {
+          "n": 20000,
+          "mean_us": 70.4801626,
+          "std_us": 5.849633243970195,
+          "min_us": 69.276,
+          "p50_us": 69.828,
+          "p90_us": 71.275,
+          "p99_us": 76.771,
+          "p999_us": 161.23,
+          "max_us": 362.506,
+          "ratio_to_primitive_mean": 1.0138504534113109,
+          "ratio_to_primitive_median": 1.0135864831910817
+        },
+        "cert_new": {
+          "n": 20000,
+          "mean_us": 148.0499095,
+          "std_us": 9.695673011235979,
+          "min_us": 145.695,
+          "p50_us": 146.791,
+          "p90_us": 149.255,
+          "p99_us": 168.982,
+          "p999_us": 335.779,
+          "max_us": 481.891,
+          "ratio_to_primitive_mean": 2.1296839044761025,
+          "ratio_to_primitive_median": 2.130740869767172
+        },
+        "decode": {
+          "n": 20000,
+          "mean_us": 0.10146134999999999,
+          "std_us": 0.11907932400789555,
+          "min_us": 0.066,
+          "p50_us": 0.084,
+          "p90_us": 0.126,
+          "p99_us": 0.408,
+          "p999_us": 1.764,
+          "max_us": 4.365,
+          "ratio_to_primitive_mean": 0.001459511895354562,
+          "ratio_to_primitive_median": 0.0012192997735586137
+        },
+        "digest_hit": {
+          "n": 20000,
+          "mean_us": 70.0447698,
+          "std_us": 4.560595182233122,
+          "min_us": 68.907,
+          "p50_us": 69.444,
+          "p90_us": 70.932,
+          "p99_us": 76.132,
+          "p999_us": 148.999,
+          "max_us": 255.081,
+          "ratio_to_primitive_mean": 1.0075873692836925,
+          "ratio_to_primitive_median": 1.0080125413690995
+        },
+        "digest_unknown": {
+          "n": 20000,
+          "mean_us": 0.10870624999999999,
+          "std_us": 0.12222855419638057,
+          "min_us": 0.077,
+          "p50_us": 0.092,
+          "p90_us": 0.122,
+          "p99_us": 0.522,
+          "p999_us": 1.895,
+          "max_us": 3.393,
+          "ratio_to_primitive_mean": 0.0015637290946196442,
+          "ratio_to_primitive_median": 0.0013354235615165768
+        },
+        "primitive": {
+          "n": 20000,
+          "mean_us": 69.51731625000001,
+          "std_us": 4.813693388588012,
+          "min_us": 68.452,
+          "p50_us": 68.892,
+          "p90_us": 70.7,
+          "p99_us": 75.9,
+          "p999_us": 123.777,
+          "max_us": 282.007,
+          "ratio_to_primitive_mean": 1,
+          "ratio_to_primitive_median": 1
+        }
+      }
+    },
+    {
+      "name": "Falcon-512",
+      "implementation": "github.com/lattice-safe/falcon-go v0.1.1, native package, padded 666-byte signatures; verification is pure Go (the module's assembly files serve signing only); the cached PublicKey holds only the encoded key, so every Verify call decodes the 897-byte public key, computes SHAKE256 over it, converts it to NTT form and decodes the signature",
+      "iterations": 20000,
+      "warmup": 1000,
+      "fleet_senders": 50,
+      "fleet_messages_per_sender": 4,
+      "sizes": {
+        "public_key": 897,
+        "signature": 666,
+        "certificate": 1615,
+        "digest_spdu": 736,
+        "certificate_spdu": 2345
+      },
+      "ops": {
+        "cert_known": {
+          "n": 20000,
+          "mean_us": 42.243407700000006,
+          "std_us": 7.117879387857079,
+          "min_us": 40.189,
+          "p50_us": 41.542,
+          "p90_us": 42.494,
+          "p99_us": 49.989,
+          "p999_us": 163.606,
+          "max_us": 279.271,
+          "ratio_to_primitive_mean": 1.0354493927957904,
+          "ratio_to_primitive_median": 1.0352888401535165
+        },
+        "cert_new": {
+          "n": 20000,
+          "mean_us": 85.59486324999999,
+          "std_us": 14.29957192219576,
+          "min_us": 81.427,
+          "p50_us": 83.635,
+          "p90_us": 86.539,
+          "p99_us": 143.511,
+          "p999_us": 263.376,
+          "max_us": 940.592,
+          "ratio_to_primitive_mean": 2.098058703219892,
+          "ratio_to_primitive_median": 2.084309425310273
+        },
+        "decode": {
+          "n": 20000,
+          "mean_us": 0.10743319999999999,
+          "std_us": 0.13087029738546493,
+          "min_us": 0.074,
+          "p50_us": 0.088,
+          "p90_us": 0.125,
+          "p99_us": 0.569,
+          "p999_us": 1.801,
+          "max_us": 3.574,
+          "ratio_to_primitive_mean": 0.002633349148726671,
+          "ratio_to_primitive_median": 0.002193091760952998
+        },
+        "digest_hit": {
+          "n": 20000,
+          "mean_us": 41.132504350000005,
+          "std_us": 6.524077679410409,
+          "min_us": 39.07,
+          "p50_us": 40.446,
+          "p90_us": 41.365,
+          "p99_us": 48.597,
+          "p999_us": 159.511,
+          "max_us": 231.706,
+          "ratio_to_primitive_mean": 1.0082194825721342,
+          "ratio_to_primitive_median": 1.0079748791307381
+        },
+        "digest_unknown": {
+          "n": 20000,
+          "mean_us": 0.11827855,
+          "std_us": 0.11579102365856132,
+          "min_us": 0.078,
+          "p50_us": 0.097,
+          "p90_us": 0.155,
+          "p99_us": 0.352,
+          "p999_us": 1.789,
+          "max_us": 3.226,
+          "ratio_to_primitive_mean": 0.00289918497219784,
+          "ratio_to_primitive_median": 0.0024173852365050093
+        },
+        "primitive": {
+          "n": 20000,
+          "mean_us": 40.797172700000004,
+          "std_us": 7.424504876365477,
+          "min_us": 38.894,
+          "p50_us": 40.126,
+          "p90_us": 41.126,
+          "p99_us": 47.733,
+          "p999_us": 154.03,
+          "max_us": 536.08,
+          "ratio_to_primitive_mean": 1,
+          "ratio_to_primitive_median": 1
+        }
+      }
+    },
+    {
+      "name": "ML-DSA-44",
+      "implementation": "github.com/lattice-safe/dilithium-go v0.3.0, vendored in third_party/dilithium-go; the NTT is scalar Go on every architecture (the upstream AVX2 assembly is missing and the vendored nttAVX2_8 is a scalar Go loop), so no SIMD is used; ML-DSA with empty context over the 32-byte digest",
+      "iterations": 20000,
+      "warmup": 1000,
+      "fleet_senders": 50,
+      "fleet_messages_per_sender": 4,
+      "sizes": {
+        "public_key": 1312,
+        "signature": 2420,
+        "certificate": 3784,
+        "digest_spdu": 2490,
+        "certificate_spdu": 6268
+      },
+      "ops": {
+        "cert_known": {
+          "n": 20000,
+          "mean_us": 93.12323845,
+          "std_us": 25.003392007473536,
+          "min_us": 87.29,
+          "p50_us": 90.235,
+          "p90_us": 94.754,
+          "p99_us": 166.758,
+          "p999_us": 312.517,
+          "max_us": 2185.717,
+          "ratio_to_primitive_mean": 1.0328322859983856,
+          "ratio_to_primitive_median": 1.0290109589353524
+        },
+        "cert_new": {
+          "n": 20000,
+          "mean_us": 186.71199335,
+          "std_us": 24.12453942872498,
+          "min_us": 176.886,
+          "p50_us": 181.981,
+          "p90_us": 188.453,
+          "p99_us": 332.556,
+          "p999_us": 442.629,
+          "max_us": 533.096,
+          "ratio_to_primitive_mean": 2.070827627182846,
+          "ratio_to_primitive_median": 2.075252876577984
+        },
+        "decode": {
+          "n": 20000,
+          "mean_us": 0.09911579999999999,
+          "std_us": 0.09518870411114984,
+          "min_us": 0.073,
+          "p50_us": 0.087,
+          "p90_us": 0.115,
+          "p99_us": 0.27,
+          "p999_us": 1.679,
+          "max_us": 2.929,
+          "ratio_to_primitive_mean": 0.0010992959437028554,
+          "ratio_to_primitive_median": 0.0009921200579306884
+        },
+        "digest_hit": {
+          "n": 20000,
+          "mean_us": 90.65203170000001,
+          "std_us": 15.296793696565798,
+          "min_us": 85.219,
+          "p50_us": 88.259,
+          "p90_us": 92.394,
+          "p99_us": 160.702,
+          "p999_us": 298.382,
+          "max_us": 475.116,
+          "ratio_to_primitive_mean": 1.0054240669624084,
+          "ratio_to_primitive_median": 1.0064772895736165
+        },
+        "digest_unknown": {
+          "n": 20000,
+          "mean_us": 0.113496,
+          "std_us": 0.09014700707178261,
+          "min_us": 0.077,
+          "p50_us": 0.095,
+          "p90_us": 0.158,
+          "p99_us": 0.261,
+          "p999_us": 1.643,
+          "max_us": 2.962,
+          "ratio_to_primitive_mean": 0.0012587871199798548,
+          "ratio_to_primitive_median": 0.0010833494885450045
+        },
+        "primitive": {
+          "n": 20000,
+          "mean_us": 90.16298165,
+          "std_us": 17.47410611365037,
+          "min_us": 84.491,
+          "p50_us": 87.691,
+          "p90_us": 91.65,
+          "p99_us": 160.759,
+          "p999_us": 289.567,
+          "max_us": 1315.617,
+          "ratio_to_primitive_mean": 1,
+          "ratio_to_primitive_median": 1
+        }
+      }
+    },
+    {
+      "name": "SLH-DSA-SHA2-128s",
+      "implementation": "github.com/lattice-safe/lattice-slh-dsa-go v0.2.0, pure Go without assembly; hashing through the standard library crypto/sha256 and crypto/sha512",
+      "iterations": 2000,
+      "warmup": 50,
+      "fleet_senders": 4,
+      "fleet_messages_per_sender": 2,
+      "sizes": {
+        "public_key": 32,
+        "signature": 7856,
+        "certificate": 7938,
+        "digest_spdu": 7926,
+        "certificate_spdu": 15858
+      },
+      "ops": {
+        "cert_known": {
+          "n": 2000,
+          "mean_us": 415.148407,
+          "std_us": 81.19247944294688,
+          "min_us": 319.876,
+          "p50_us": 402.767,
+          "p90_us": 537.335,
+          "p99_us": 681.879,
+          "p999_us": 717.685,
+          "max_us": 735.42,
+          "ratio_to_primitive_mean": 1.0084723284206283,
+          "ratio_to_primitive_median": 1.0058312023015143
+        },
+        "cert_new": {
+          "n": 2000,
+          "mean_us": 828.426287,
+          "std_us": 131.65376314559967,
+          "min_us": 634.514,
+          "p50_us": 812.687,
+          "p90_us": 1043.705,
+          "p99_us": 1133.891,
+          "p999_us": 1169.353,
+          "max_us": 1207.255,
+          "ratio_to_primitive_mean": 2.012400800506373,
+          "ratio_to_primitive_median": 2.029525612338674
+        },
+        "decode": {
+          "n": 2000,
+          "mean_us": 0.0975115,
+          "std_us": 0.08750045067169654,
+          "min_us": 0.074,
+          "p50_us": 0.086,
+          "p90_us": 0.099,
+          "p99_us": 0.347,
+          "p999_us": 1.342,
+          "max_us": 2.212,
+          "ratio_to_primitive_mean": 0.00023687348378236242,
+          "ratio_to_primitive_median": 0.0002147680505054541
+        },
+        "digest_hit": {
+          "n": 2000,
+          "mean_us": 406.3118515,
+          "std_us": 83.67239766583985,
+          "min_us": 306.782,
+          "p50_us": 392.824,
+          "p90_us": 536.376,
+          "p99_us": 686.111,
+          "p999_us": 733.908,
+          "max_us": 751.026,
+          "ratio_to_primitive_mean": 0.9870066993828102,
+          "ratio_to_primitive_median": 0.9810005194390059
+        },
+        "digest_unknown": {
+          "n": 2000,
+          "mean_us": 0.11128199999999999,
+          "std_us": 0.1058768457973697,
+          "min_us": 0.081,
+          "p50_us": 0.09,
+          "p90_us": 0.157,
+          "p99_us": 0.31,
+          "p999_us": 1.674,
+          "max_us": 2.231,
+          "ratio_to_primitive_mean": 0.000270324577329534,
+          "ratio_to_primitive_median": 0.00022475726215687056
+        },
+        "primitive": {
+          "n": 2000,
+          "mean_us": 411.6606825,
+          "std_us": 81.86496509005966,
+          "min_us": 308.781,
+          "p50_us": 400.432,
+          "p90_us": 533.224,
+          "p99_us": 692.862,
+          "p999_us": 755.883,
+          "max_us": 814.895,
+          "ratio_to_primitive_mean": 1,
+          "ratio_to_primitive_median": 1
+        }
+      }
+    }
+  ]
+}

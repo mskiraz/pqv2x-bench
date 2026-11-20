@@ -1,0 +1,123 @@
+scheme,format,payload_bytes,spdu_bytes,limit_bytes,remaining_bytes,fits,signed_and_verified
+ECDSA P-256,digest,0,93,2481,2388,true,true
+ECDSA P-256,digest,39,132,2481,2349,true,true
+ECDSA P-256,digest,64,157,2481,2324,true,true
+ECDSA P-256,digest,100,193,2481,2288,true,true
+ECDSA P-256,digest,128,222,2481,2259,true,true
+ECDSA P-256,digest,160,254,2481,2227,true,true
+ECDSA P-256,digest,170,264,2481,2217,true,true
+ECDSA P-256,digest,174,268,2481,2213,true,true
+ECDSA P-256,digest,175,269,2481,2212,true,true
+ECDSA P-256,digest,176,270,2481,2211,true,true
+ECDSA P-256,digest,200,294,2481,2187,true,true
+ECDSA P-256,digest,256,351,2481,2130,true,true
+ECDSA P-256,digest,400,495,2481,1986,true,true
+ECDSA P-256,digest,2386,2481,2481,0,true,true
+ECDSA P-256,digest,2387,2482,2481,-1,false,true
+ECDSA P-256,certificate,0,231,2481,2250,true,true
+ECDSA P-256,certificate,39,270,2481,2211,true,true
+ECDSA P-256,certificate,64,295,2481,2186,true,true
+ECDSA P-256,certificate,100,331,2481,2150,true,true
+ECDSA P-256,certificate,128,360,2481,2121,true,true
+ECDSA P-256,certificate,160,392,2481,2089,true,true
+ECDSA P-256,certificate,170,402,2481,2079,true,true
+ECDSA P-256,certificate,174,406,2481,2075,true,true
+ECDSA P-256,certificate,175,407,2481,2074,true,true
+ECDSA P-256,certificate,176,408,2481,2073,true,true
+ECDSA P-256,certificate,200,432,2481,2049,true,true
+ECDSA P-256,certificate,256,489,2481,1992,true,true
+ECDSA P-256,certificate,400,633,2481,1848,true,true
+ECDSA P-256,certificate,2248,2481,2481,0,true,true
+ECDSA P-256,certificate,2249,2482,2481,-1,false,true
+Falcon-512,digest,0,697,2481,1784,true,true
+Falcon-512,digest,39,736,2481,1745,true,true
+Falcon-512,digest,64,761,2481,1720,true,true
+Falcon-512,digest,100,797,2481,1684,true,true
+Falcon-512,digest,128,826,2481,1655,true,true
+Falcon-512,digest,160,858,2481,1623,true,true
+Falcon-512,digest,170,868,2481,1613,true,true
+Falcon-512,digest,174,872,2481,1609,true,true
+Falcon-512,digest,175,873,2481,1608,true,true
+Falcon-512,digest,176,874,2481,1607,true,true
+Falcon-512,digest,200,898,2481,1583,true,true
+Falcon-512,digest,256,955,2481,1526,true,true
+Falcon-512,digest,400,1099,2481,1382,true,true
+Falcon-512,digest,1782,2481,2481,0,true,true
+Falcon-512,digest,1783,2482,2481,-1,false,true
+Falcon-512,certificate,0,2306,2481,175,true,true
+Falcon-512,certificate,39,2345,2481,136,true,true
+Falcon-512,certificate,64,2370,2481,111,true,true
+Falcon-512,certificate,100,2406,2481,75,true,true
+Falcon-512,certificate,128,2435,2481,46,true,true
+Falcon-512,certificate,160,2467,2481,14,true,true
+Falcon-512,certificate,170,2477,2481,4,true,true
+Falcon-512,certificate,174,2481,2481,0,true,true
+Falcon-512,certificate,175,2482,2481,-1,false,true
+Falcon-512,certificate,176,2483,2481,-2,false,true
+Falcon-512,certificate,200,2507,2481,-26,false,true
+Falcon-512,certificate,256,2564,2481,-83,false,true
+Falcon-512,certificate,400,2708,2481,-227,false,true
+ML-DSA-44,digest,0,2451,2481,30,true,true
+ML-DSA-44,digest,30,2481,2481,0,true,true
+ML-DSA-44,digest,31,2482,2481,-1,false,true
+ML-DSA-44,digest,39,2490,2481,-9,false,true
+ML-DSA-44,digest,64,2515,2481,-34,false,true
+ML-DSA-44,digest,100,2551,2481,-70,false,true
+ML-DSA-44,digest,128,2580,2481,-99,false,true
+ML-DSA-44,digest,160,2612,2481,-131,false,true
+ML-DSA-44,digest,170,2622,2481,-141,false,true
+ML-DSA-44,digest,174,2626,2481,-145,false,true
+ML-DSA-44,digest,175,2627,2481,-146,false,true
+ML-DSA-44,digest,176,2628,2481,-147,false,true
+ML-DSA-44,digest,200,2652,2481,-171,false,true
+ML-DSA-44,digest,256,2709,2481,-228,false,true
+ML-DSA-44,digest,400,2853,2481,-372,false,true
+ML-DSA-44,certificate,0,6229,2481,-3748,false,true
+ML-DSA-44,certificate,39,6268,2481,-3787,false,true
+ML-DSA-44,certificate,64,6293,2481,-3812,false,true
+ML-DSA-44,certificate,100,6329,2481,-3848,false,true
+ML-DSA-44,certificate,128,6358,2481,-3877,false,true
+ML-DSA-44,certificate,160,6390,2481,-3909,false,true
+ML-DSA-44,certificate,170,6400,2481,-3919,false,true
+ML-DSA-44,certificate,174,6404,2481,-3923,false,true
+ML-DSA-44,certificate,175,6405,2481,-3924,false,true
+ML-DSA-44,certificate,176,6406,2481,-3925,false,true
+ML-DSA-44,certificate,200,6430,2481,-3949,false,true
+ML-DSA-44,certificate,256,6487,2481,-4006,false,true
+ML-DSA-44,certificate,400,6631,2481,-4150,false,true
+SLH-DSA-SHA2-128s,digest,0,7887,2481,-5406,false,true
+SLH-DSA-SHA2-128s,digest,39,7926,2481,-5445,false,true
+SLH-DSA-SHA2-128s,digest,64,7951,2481,-5470,false,true
+SLH-DSA-SHA2-128s,digest,100,7987,2481,-5506,false,true
+SLH-DSA-SHA2-128s,digest,128,8016,2481,-5535,false,true
+SLH-DSA-SHA2-128s,digest,160,8048,2481,-5567,false,true
+SLH-DSA-SHA2-128s,digest,170,8058,2481,-5577,false,true
+SLH-DSA-SHA2-128s,digest,174,8062,2481,-5581,false,true
+SLH-DSA-SHA2-128s,digest,175,8063,2481,-5582,false,true
+SLH-DSA-SHA2-128s,digest,176,8064,2481,-5583,false,true
+SLH-DSA-SHA2-128s,digest,200,8088,2481,-5607,false,true
+SLH-DSA-SHA2-128s,digest,256,8145,2481,-5664,false,true
+SLH-DSA-SHA2-128s,digest,400,8289,2481,-5808,false,true
+SLH-DSA-SHA2-128s,certificate,0,15819,2481,-13338,false,true
+SLH-DSA-SHA2-128s,certificate,39,15858,2481,-13377,false,true
+SLH-DSA-SHA2-128s,certificate,64,15883,2481,-13402,false,true
+SLH-DSA-SHA2-128s,certificate,100,15919,2481,-13438,false,true
+SLH-DSA-SHA2-128s,certificate,128,15948,2481,-13467,false,true
+SLH-DSA-SHA2-128s,certificate,160,15980,2481,-13499,false,true
+SLH-DSA-SHA2-128s,certificate,170,15990,2481,-13509,false,true
+SLH-DSA-SHA2-128s,certificate,174,15994,2481,-13513,false,true
+SLH-DSA-SHA2-128s,certificate,175,15995,2481,-13514,false,true
+SLH-DSA-SHA2-128s,certificate,176,15996,2481,-13515,false,true
+SLH-DSA-SHA2-128s,certificate,200,16020,2481,-13539,false,true
+SLH-DSA-SHA2-128s,certificate,256,16077,2481,-13596,false,true
+SLH-DSA-SHA2-128s,certificate,400,16221,2481,-13740,false,true
+
+scheme,format,certificate_bytes,spdu_bytes_at_0,spdu_bytes_at_39,max_fitting_payload_bytes,spdu_bytes_at_max,first_exceeding_payload_bytes,spdu_bytes_at_first_exceeding,size_nondecreasing
+ECDSA P-256,digest,144,93,132,2386,2481,2387,2482,true
+ECDSA P-256,certificate,144,231,270,2248,2481,2249,2482,true
+Falcon-512,digest,1615,697,736,1782,2481,1783,2482,true
+Falcon-512,certificate,1615,2306,2345,174,2481,175,2482,true
+ML-DSA-44,digest,3784,2451,2490,30,2481,31,2482,true
+ML-DSA-44,certificate,3784,6229,6268,-1,0,0,6229,true
+SLH-DSA-SHA2-128s,digest,7938,7887,7926,-1,0,0,7887,true
+SLH-DSA-SHA2-128s,certificate,7938,15819,15858,-1,0,0,15819,true
