@@ -78,8 +78,19 @@ func newCert(sc sigs.Scheme, issuerID [8]byte, pk []byte) *ieee1609.Certificate 
 
 // New generates an issuer, nSenders pseudonym certificates, and perSender
 // digest and certificate-carrying messages for each sender. The issuing
-// authority signs with the same scheme as the pseudonyms.
+// authority signs with the same scheme as the pseudonyms. Messages carry a
+// BSMPayloadSize-byte payload.
 func New(sc sigs.Scheme, nSenders, perSender int) (*Fleet, error) {
+	return NewWithPayload(sc, nSenders, perSender, BSMPayloadSize)
+}
+
+// NewWithPayload is New with a configurable application-payload length in
+// bytes. It is used by the payload-size sensitivity analysis; the benchmark
+// uses New.
+func NewWithPayload(sc sigs.Scheme, nSenders, perSender, payloadSize int) (*Fleet, error) {
+	if payloadSize < 0 {
+		return nil, fmt.Errorf("negative payload size %d", payloadSize)
+	}
 	f := &Fleet{Scheme: sc}
 
 	// Issuing authority: self-signed, signer hash is the hash of the empty
@@ -99,7 +110,7 @@ func New(sc sigs.Scheme, nSenders, perSender int) (*Fleet, error) {
 	issuerHash := ieee1609.HashCert(issuer.Raw)
 	f.Issuer = issuer
 
-	payload := make([]byte, BSMPayloadSize)
+	payload := make([]byte, payloadSize)
 	for i := 0; i < nSenders; i++ {
 		sk, pk, err := sc.GenerateKey()
 		if err != nil {
@@ -143,4 +154,31 @@ func New(sc sigs.Scheme, nSenders, perSender int) (*Fleet, error) {
 		}
 	}
 	return f, nil
+}
+
+// SignMessage signs and encodes one message from sender i with the given
+// payload, in digest form (carry false) or certificate-carrying form.
+func (f *Fleet) SignMessage(i int, payload []byte, carry bool) (Message, error) {
+	if i < 0 || i >= len(f.Senders) {
+		return Message{}, fmt.Errorf("no sender %d", i)
+	}
+	s := f.Senders[i]
+	m := &ieee1609.SPDU{
+		Payload: append([]byte(nil), payload...),
+		Psid:    ieee1609.PsidBSM,
+		GenTime: NowMicros,
+		SigAlg:  f.Scheme.Alg(),
+	}
+	if carry {
+		m.Cert = s.Cert
+	} else {
+		m.Digest = s.ID
+	}
+	in := ieee1609.SignInput(m.EncodeTBS(), s.CertHash)
+	sig, err := s.key.Sign(in[:])
+	if err != nil {
+		return Message{}, fmt.Errorf("message sign: %w", err)
+	}
+	m.Signature = sig
+	return Message{Raw: m.Encode(), Sender: i, SignInput: in, Signature: sig}, nil
 }

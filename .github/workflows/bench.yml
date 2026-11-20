@@ -1,17 +1,18 @@
 name: bench
 
-# Runs the tests and the receiver-path benchmark natively on x86-64 and on
-# 64-bit ARM GitHub-hosted Linux runners, and uploads every output file
-# (JSON, CSV, Markdown, raw timing samples, environment description) as one
-# artifact per runner.
+# Native receiver-path benchmarks on x86-64 and 64-bit ARM GitHub-hosted
+# Linux runners, the analysis that regenerates every simulation and size
+# table from the code, and a report job that compares the platforms.
 #
 # Trigger: Actions tab -> bench -> "Run workflow" (any branch), or
 #   gh workflow run bench.yml --ref <branch>
 # It also runs on a push to main that changes more than documentation.
 #
-# Hosted runners are shared virtual machines: expect more timing noise than
-# on a dedicated board, and do not compare their absolute times with the
-# laptop results in results/ without matching conditions.
+# Hosted runners are shared virtual machines (a Neoverse-N2 server core on
+# ubuntu-24.04-arm, an AMD EPYC on ubuntu-24.04 at the time of writing), not
+# automotive processors. Expect more timing noise than on a dedicated board,
+# and do not compare their absolute times with the laptop results in
+# results/ without matching conditions.
 on:
   workflow_dispatch:
   push:
@@ -20,6 +21,12 @@ on:
 
 permissions:
   contents: read
+
+env:
+  # Same toolchain as the published laptop runs.
+  GOTOOLCHAIN: go1.25.6
+  CONFIGS: "100000"
+  SENDERS: "100,150,162,200"
 
 jobs:
   bench:
@@ -30,8 +37,6 @@ jobs:
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 120
     env:
-      # Same toolchain as the published laptop runs.
-      GOTOOLCHAIN: go1.25.6
       TAG: gha-${{ matrix.runner }}-run${{ github.run_id }}-${{ github.run_attempt }}
       OUT: results-ci
     steps:
@@ -52,17 +57,98 @@ jobs:
             echo "## go env"; go env
             echo "## git"; git rev-parse HEAD; git status --short
           } > "$OUT/env_${TAG}.txt" 2>&1
-      - name: Tests
+      - name: Tests (short)
         run: go test -short ./...
       - name: Benchmark (original methodology, garbage collector enabled)
         run: go run ./cmd/bench -tag "$TAG" -out "$OUT"
       - name: Benchmark (sensitivity run, garbage collector disabled)
         run: go run ./cmd/bench -tag "$TAG-gcoff" -gogc -1 -out "$OUT"
-      - name: Queue simulation from this runner's samples (legacy abstract model)
-        run: go run ./cmd/queuesim -mode measured -results "$OUT" -tag "$TAG" -configs 100000 -senders 100,150,162,200 -out "$OUT/queuesim_measured_${TAG}.md"
+      - name: Queue simulations from this runner's Falcon-512 ratios (platform-scaled estimates)
+        run: |
+          go run ./cmd/queuesim -mode measured -results "$OUT" -tag "$TAG" -configs "$CONFIGS" -senders "$SENDERS" \
+            -out "$OUT/queuesim_legacy_measured_${TAG}.md" -ext-out "$OUT/queuesim_legacy_measured_${TAG}_extended.md" -csv "$OUT/queuesim_legacy_measured_${TAG}.csv" > /dev/null
+          go run ./cmd/queuesim -arrival certaware -mode measured -results "$OUT" -tag "$TAG" -configs "$CONFIGS" -senders "$SENDERS" \
+            -out "$OUT/queuesim_certaware_measured_${TAG}.md" -csv "$OUT/queuesim_certaware_measured_${TAG}.csv" > /dev/null
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: results-${{ matrix.runner }}
+          path: ${{ env.OUT }}
+          retention-days: 90
+
+  analysis:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      OUT: results-analysis
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.6"
+          cache: false
+      - name: Tests (full, including SLH-DSA)
+        run: go test ./...
+      - name: Legacy simulations reproduce the published files byte for byte
+        run: |
+          mkdir -p "$OUT"
+          go run ./cmd/queuesim -mode fixed -configs "$CONFIGS" \
+            -out "$OUT/legacy_fixed.md" -ext-out "$OUT/legacy_fixed_extended.md" -csv "$OUT/legacy_fixed.csv" > /dev/null
+          diff "$OUT/legacy_fixed.md" results/queuesim_fixed.md
+          for r in 1 2; do
+            go run ./cmd/queuesim -mode measured -tag "intel-i9-10980hk-run$r" -configs "$CONFIGS" -senders "$SENDERS" \
+              -out "$OUT/legacy_measured_run$r.md" -ext-out "$OUT/legacy_measured_run${r}_extended.md" -csv "$OUT/legacy_measured_run$r.csv" > /dev/null
+            diff "$OUT/legacy_measured_run$r.md" "results/queuesim_measured_run$r.md"
+          done
+          echo "legacy outputs identical to results/queuesim_*.md" > "$OUT/legacy_regression.txt"
+      - name: Certificate-aware simulations (published laptop ratios and fixed work)
+        run: |
+          go run ./cmd/queuesim -arrival certaware -mode fixed -configs "$CONFIGS" \
+            -out "$OUT/certaware_fixed.md" -csv "$OUT/certaware_fixed.csv" > /dev/null
+          for r in 1 2; do
+            go run ./cmd/queuesim -arrival certaware -mode measured -tag "intel-i9-10980hk-run$r" -configs "$CONFIGS" -senders "$SENDERS" \
+              -out "$OUT/certaware_measured_run$r.md" -csv "$OUT/certaware_measured_run$r.csv" > /dev/null
+          done
+          go run ./cmd/queuecompare -out "$OUT/queue_comparison" \
+            "$OUT/legacy_fixed.csv" "$OUT/certaware_fixed.csv" \
+            "$OUT/legacy_measured_run1.csv" "$OUT/certaware_measured_run1.csv" \
+            "$OUT/legacy_measured_run2.csv" "$OUT/certaware_measured_run2.csv" > /dev/null
+      - name: Payload-size sweep
+        run: go run ./cmd/sizesweep -out "$OUT/payload" > /dev/null
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: results-analysis
+          path: ${{ env.OUT }}
+          retention-days: 90
+
+  report:
+    needs: [bench, analysis]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      OUT: results-report
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.6"
+          cache: false
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Cross-platform benchmark comparison
+        run: |
+          mkdir -p "$OUT"
+          go run ./cmd/benchcompare -ref intel-i9-10980hk-run1 -out "$OUT/arm_benchmark_comparison" \
+            results/bench_intel-i9-10980hk-run1.json results/bench_intel-i9-10980hk-run2.json \
+            artifacts/results-ubuntu-24.04/bench_*.json artifacts/results-ubuntu-24.04-arm/bench_*.json > /dev/null
+          go run ./cmd/queuecompare -out "$OUT/queue_comparison_runner_ratios" \
+            artifacts/results-ubuntu-24.04/queuesim_*measured*.csv artifacts/results-ubuntu-24.04-arm/queuesim_*measured*.csv > /dev/null
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: results-report
           path: ${{ env.OUT }}
           retention-days: 90
