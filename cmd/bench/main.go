@@ -4,7 +4,10 @@
 // For each scheme it reports the encoded certificate and message sizes and
 // the per-message time of six operations:
 //
-//	primitive       signature verification only, key already parsed
+//	primitive       the scheme's Verify call on the receiver's cached
+//	                PublicKey value; what that call does internally depends
+//	                on the library (see implNotes: the Falcon library decodes
+//	                and hashes the encoded public key inside every call)
 //	decode          COER decoding of a digest-form message
 //	digest_hit      full path, signer given as HashedId8, certificate cached
 //	cert_known      full path, certificate carried and already cached
@@ -25,11 +28,13 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"runtime/debug"
 	"sort"
 	"strings"
 	"time"
 
 	"pqv2xbench/internal/fleet"
+	"pqv2xbench/internal/hostinfo"
 	"pqv2xbench/internal/hrtime"
 	"pqv2xbench/internal/ieee1609"
 	"pqv2xbench/internal/receiver"
@@ -61,9 +66,14 @@ type Sizes struct {
 }
 
 type SchemeResult struct {
-	Name  string           `json:"name"`
-	Sizes Sizes            `json:"sizes"`
-	Ops   map[string]Stats `json:"ops"`
+	Name           string           `json:"name"`
+	Implementation string           `json:"implementation,omitempty"`
+	Iterations     int              `json:"iterations,omitempty"`
+	Warmup         int              `json:"warmup,omitempty"`
+	FleetSenders   int              `json:"fleet_senders,omitempty"`
+	FleetPerSender int              `json:"fleet_messages_per_sender,omitempty"`
+	Sizes          Sizes            `json:"sizes"`
+	Ops            map[string]Stats `json:"ops"`
 }
 
 type Report struct {
@@ -75,29 +85,25 @@ type Report struct {
 	CPU       string         `json:"cpu"`
 	NumCPU    int            `json:"num_cpu"`
 	Iters     int            `json:"iterations"`
+	GCMode    string         `json:"gc_mode,omitempty"`
+	Env       *hostinfo.Info `json:"environment,omitempty"`
 	Schemes   []SchemeResult `json:"schemes"`
+}
+
+// implNotes describes, per scheme, the implementation that is measured and
+// what its verification call contains. The statements were checked against
+// the library sources of the versions pinned in go.mod.
+var implNotes = map[sigs.Alg]string{
+	sigs.ECDSAP256:  "Go standard library crypto/ecdsa; the public key is parsed once into an *ecdsa.PublicKey when cached",
+	sigs.Falcon512:  "github.com/lattice-safe/falcon-go v0.1.1, native package, padded 666-byte signatures; verification is pure Go (the module's assembly files serve signing only); the cached PublicKey holds only the encoded key, so every Verify call decodes the 897-byte public key, computes SHAKE256 over it, converts it to NTT form and decodes the signature",
+	sigs.MLDSA44:    "github.com/lattice-safe/dilithium-go v0.3.0, vendored in third_party/dilithium-go; the NTT is scalar Go on every architecture (the upstream AVX2 assembly is missing and the vendored nttAVX2_8 is a scalar Go loop), so no SIMD is used; ML-DSA with empty context over the 32-byte digest",
+	sigs.SLHDSA128s: "github.com/lattice-safe/lattice-slh-dsa-go v0.2.0, pure Go without assembly; hashing through the standard library crypto/sha256 and crypto/sha512",
 }
 
 // smallBatch is the batch size for sub-microsecond operations.
 const smallBatch = 64
 
 var opOrder = []string{"primitive", "decode", "digest_hit", "cert_known", "cert_new", "digest_unknown"}
-
-func cpuName() string {
-	if b, err := os.ReadFile("/proc/cpuinfo"); err == nil {
-		for _, l := range strings.Split(string(b), "\n") {
-			if strings.HasPrefix(l, "model name") || strings.HasPrefix(l, "Model") {
-				if i := strings.Index(l, ":"); i >= 0 {
-					return strings.TrimSpace(l[i+1:])
-				}
-			}
-		}
-	}
-	if v := os.Getenv("PROCESSOR_IDENTIFIER"); v != "" {
-		return v
-	}
-	return "unknown"
-}
 
 func summarize(ns []int64) Stats {
 	s := append([]int64(nil), ns...)
@@ -179,7 +185,9 @@ func runScheme(sc sigs.Scheme, senders, per, iters, warm int, rawDir, tag string
 	if err != nil {
 		return SchemeResult{}, err
 	}
-	res := SchemeResult{Name: sc.Name(), Ops: map[string]Stats{}}
+	res := SchemeResult{Name: sc.Name(), Implementation: implNotes[sc.Alg()],
+		Iterations: iters, Warmup: warm, FleetSenders: senders, FleetPerSender: per,
+		Ops: map[string]Stats{}}
 	res.Sizes = Sizes{
 		PublicKey: sc.PublicKeySize(), Signature: sc.SignatureSize(),
 		Certificate: len(f.Senders[0].Cert.Raw),
@@ -262,18 +270,73 @@ func markdown(r Report) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "# Receiver authentication benchmark (%s)\n\n", r.Tag)
 	fmt.Fprintf(&b, "- CPU: %s (%d logical CPUs), %s/%s, %s\n", r.CPU, r.NumCPU, r.GOOS, r.GOARCH, r.GoVersion)
-	fmt.Fprintf(&b, "- %d timed iterations per operation, single goroutine, garbage collector enabled\n- Run: %s\n\n", r.Iters, r.Time)
+	gc := r.GCMode
+	if gc == "" {
+		gc = "enabled"
+	}
+	fmt.Fprintf(&b, "- %d timed iterations per operation (per-scheme counts below), single goroutine, garbage collector %s\n- Run: %s\n", r.Iters, gc, r.Time)
+	if e := r.Env; e != nil {
+		fmt.Fprintf(&b, "- OS: %s", e.OSVersion)
+		if e.Kernel != "" {
+			fmt.Fprintf(&b, " (kernel %s)", e.Kernel)
+		}
+		fmt.Fprintf(&b, "; compiler %s; GOMAXPROCS %d; GOGC env %q; effective GC percent %d\n", e.Compiler, e.GOMAXPROCS, e.GOGCEnv, e.GCPercent)
+		fmt.Fprintf(&b, "- CPU features: %s\n", strings.Join(e.CPUFeatures, ", "))
+		keys := make([]string, 0, len(e.BuildSet))
+		for k := range e.BuildSet {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		var kv []string
+		for _, k := range keys {
+			kv = append(kv, k+"="+e.BuildSet[k])
+		}
+		fmt.Fprintf(&b, "- Build settings: %s\n", strings.Join(kv, " "))
+		var mods []string
+		for _, m := range e.Modules {
+			s := m.Path + "@" + m.Version
+			if m.Replace != "" {
+				s += " => " + m.Replace
+			}
+			mods = append(mods, s)
+		}
+		fmt.Fprintf(&b, "- Modules: %s\n", strings.Join(mods, "; "))
+	}
+	b.WriteString("\n## Implementations and sample counts\n\n| Scheme | Timed iterations | Warm-up | Fleet (senders x messages per form) | Implementation |\n|---|---:|---:|---|---|\n")
+	for _, s := range r.Schemes {
+		fmt.Fprintf(&b, "| %s | %d | %d | %d x %d | %s |\n", s.Name, s.Iterations, s.Warmup, s.FleetSenders, s.FleetPerSender, s.Implementation)
+	}
+	b.WriteString("\n")
 	b.WriteString("## Encoded sizes (bytes)\n\n| Scheme | Public key | Signature | Certificate | Digest SPDU | Certificate SPDU |\n|---|---:|---:|---:|---:|---:|\n")
 	for _, s := range r.Schemes {
 		z := s.Sizes
 		fmt.Fprintf(&b, "| %s | %d | %d | %d | %d | %d |\n", s.Name, z.PublicKey, z.Signature, z.Certificate, z.DigestSPDU, z.CertSPDU)
 	}
-	b.WriteString("\n## Time per message (microseconds)\n\n| Scheme | Operation | Mean | Std | Median | p99 | p99.9 | Max | Mean / primitive | Median / primitive |\n|---|---|---:|---:|---:|---:|---:|---:|---:|---:|\n")
+	b.WriteString("\n## Time per message (microseconds)\n\n| Scheme | Operation | Mean | Std | Median | p90 | p99 | p99.9 | Max | Mean / primitive | Median / primitive |\n|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|\n")
 	for _, s := range r.Schemes {
 		for _, op := range opOrder {
 			t := s.Ops[op]
-			fmt.Fprintf(&b, "| %s | %s | %.2f | %.2f | %.2f | %.2f | %.2f | %.2f | %.3f | %.3f |\n",
-				s.Name, op, t.Mean, t.Std, t.P50, t.P99, t.P999, t.Max, t.Ratio, t.RatioM)
+			fmt.Fprintf(&b, "| %s | %s | %.2f | %.2f | %.2f | %.2f | %.2f | %.2f | %.2f | %.3f | %.3f |\n",
+				s.Name, op, t.Mean, t.Std, t.P50, t.P90, t.P99, t.P999, t.Max, t.Ratio, t.RatioM)
+		}
+	}
+	return b.String()
+}
+
+// csvReport writes one row per scheme and operation.
+func csvReport(r Report) string {
+	var b strings.Builder
+	b.WriteString("tag,goos,goarch,cpu,go_version,gc_mode,scheme,operation,n,mean_us,std_us,min_us,p50_us,p90_us,p99_us,p999_us,max_us,ratio_to_primitive_mean,ratio_to_primitive_median\n")
+	gc := r.GCMode
+	if gc == "" {
+		gc = "enabled"
+	}
+	for _, s := range r.Schemes {
+		for _, op := range opOrder {
+			t := s.Ops[op]
+			fmt.Fprintf(&b, "%s,%s,%s,%q,%s,%q,%s,%s,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.5f,%.5f\n",
+				r.Tag, r.GOOS, r.GOARCH, r.CPU, r.GoVersion, gc, s.Name, op, t.N,
+				t.Mean, t.Std, t.Min, t.P50, t.P90, t.P99, t.P999, t.Max, t.Ratio, t.RatioM)
 		}
 	}
 	return b.String()
@@ -288,7 +351,16 @@ func main() {
 	out := flag.String("out", "results", "output directory")
 	tag := flag.String("tag", runtime.GOOS+"-"+runtime.GOARCH, "label for this run")
 	only := flag.String("schemes", "", "comma-separated subset: ecdsa,falcon,mldsa,slhdsa")
+	gogc := flag.Int("gogc", -2, "garbage-collector setting for a sensitivity run: -1 disables the collector, a positive value sets the GOGC percentage; the default -2 leaves the runtime setting unchanged (the original methodology)")
 	flag.Parse()
+
+	if *gogc >= -1 {
+		debug.SetGCPercent(*gogc)
+	}
+	gcMode := fmt.Sprintf("enabled (GC percent %d)", hostinfo.GCPercent())
+	if hostinfo.GCPercent() < 0 {
+		gcMode = "disabled (only the explicit runtime.GC() before each timed loop)"
+	}
 
 	runtime.LockOSThread()
 	rawDir := filepath.Join(*out, "raw")
@@ -298,8 +370,11 @@ func main() {
 	}
 	rep := Report{
 		Tag: *tag, Time: time.Now().UTC().Format(time.RFC3339), GoVersion: runtime.Version(),
-		GOOS: runtime.GOOS, GOARCH: runtime.GOARCH, CPU: cpuName(), NumCPU: runtime.NumCPU(), Iters: *iters,
+		GOOS: runtime.GOOS, GOARCH: runtime.GOARCH, CPU: hostinfo.Collect().CPU, NumCPU: runtime.NumCPU(), Iters: *iters,
+		GCMode: gcMode,
 	}
+	env := hostinfo.Collect()
+	rep.Env = &env
 	want := func(sc sigs.Scheme) bool {
 		if *only == "" {
 			return true
@@ -334,6 +409,10 @@ func main() {
 	}
 	md := markdown(rep)
 	if err := os.WriteFile(filepath.Join(*out, "bench_"+*tag+".md"), []byte(md), 0o644); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	if err := os.WriteFile(filepath.Join(*out, "bench_"+*tag+".csv"), []byte(csvReport(rep)), 0o644); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

@@ -1,13 +1,25 @@
 name: bench
 
-# Runs the tests and the benchmark on x86-64 and on 64-bit ARM runners.
-# Trigger manually from the Actions tab, or on a push to main that changes
-# more than documentation.
+# Runs the tests and the receiver-path benchmark natively on x86-64 and on
+# 64-bit ARM GitHub-hosted Linux runners, and uploads every output file
+# (JSON, CSV, Markdown, raw timing samples, environment description) as one
+# artifact per runner.
+#
+# Trigger: Actions tab -> bench -> "Run workflow" (any branch), or
+#   gh workflow run bench.yml --ref <branch>
+# It also runs on a push to main that changes more than documentation.
+#
+# Hosted runners are shared virtual machines: expect more timing noise than
+# on a dedicated board, and do not compare their absolute times with the
+# laptop results in results/ without matching conditions.
 on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths-ignore: ['**.md', 'LICENSE']
+    paths-ignore: ['**.md', 'LICENSE', 'results/**']
+
+permissions:
+  contents: read
 
 jobs:
   bench:
@@ -16,15 +28,41 @@ jobs:
       matrix:
         runner: [ubuntu-24.04, ubuntu-24.04-arm]
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    env:
+      # Same toolchain as the published laptop runs.
+      GOTOOLCHAIN: go1.25.6
+      TAG: gha-${{ matrix.runner }}-run${{ github.run_id }}-${{ github.run_attempt }}
+      OUT: results-ci
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.25"
-      - run: go test -short ./internal/...
-      - run: go run ./cmd/bench -tag ${{ matrix.runner }} -out results-ci
-      - run: go run ./cmd/queuesim -mode measured -results results-ci -tag ${{ matrix.runner }} -out results-ci/queuesim_${{ matrix.runner }}.md
+          go-version: "1.25.6"
+          cache: false
+      - name: Record environment
+        run: |
+          mkdir -p "$OUT"
+          {
+            echo "## uname -a"; uname -a
+            echo "## /etc/os-release"; cat /etc/os-release
+            echo "## lscpu"; lscpu
+            echo "## nproc"; nproc
+            echo "## go version"; go version
+            echo "## go env"; go env
+            echo "## git"; git rev-parse HEAD; git status --short
+          } > "$OUT/env_${TAG}.txt" 2>&1
+      - name: Tests
+        run: go test -short ./...
+      - name: Benchmark (original methodology, garbage collector enabled)
+        run: go run ./cmd/bench -tag "$TAG" -out "$OUT"
+      - name: Benchmark (sensitivity run, garbage collector disabled)
+        run: go run ./cmd/bench -tag "$TAG-gcoff" -gogc -1 -out "$OUT"
+      - name: Queue simulation from this runner's samples (legacy abstract model)
+        run: go run ./cmd/queuesim -mode measured -results "$OUT" -tag "$TAG" -configs 100000 -senders 100,150,162,200 -out "$OUT/queuesim_measured_${TAG}.md"
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: results-${{ matrix.runner }}
-          path: results-ci
+          path: ${{ env.OUT }}
+          retention-days: 90
